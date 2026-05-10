@@ -1,0 +1,26 @@
+{
+  "exp1": {
+    "game_count": 8,
+    "phase_names": [
+      "phase_2_context"
+    ],
+    "session_count": 37012,
+    "simulation_count": 672
+  },
+  "exp2": {
+    "game_count": 10,
+    "phase_names": [
+      "phase_2"
+    ],
+    "session_count": 27122,
+    "simulation_count": 1391
+  },
+  "exp3": {
+    "game_count": 5,
+    "phase_names": [
+      "phase_2"
+    ],
+    "session_count": 12522,
+    "simulation_count": 643
+  }
+}

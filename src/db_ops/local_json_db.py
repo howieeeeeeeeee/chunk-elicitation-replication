@@ -1,0 +1,209 @@
+from __future__ import annotations
+
+import copy
+import json
+import threading
+from datetime import date, datetime
+from pathlib import Path
+from typing import Any, Iterable
+
+
+COLLECTIONS = ("simulations", "simulation_sessions", "benchmarks", "findings")
+_LOCKS_GUARD = threading.RLock()
+_LOCKS: dict[Path, threading.RLock] = {}
+
+
+def to_jsonable(value: Any) -> Any:
+    if isinstance(value, (datetime, date)):
+        return value.isoformat()
+    if isinstance(value, dict):
+        return {str(k): to_jsonable(v) for k, v in value.items()}
+    if isinstance(value, list):
+        return [to_jsonable(v) for v in value]
+    if isinstance(value, tuple):
+        return [to_jsonable(v) for v in value]
+    return value
+
+
+def _get_by_dot_path(document: dict, dot_path: str) -> Any:
+    current: Any = document
+    for part in dot_path.split("."):
+        if not isinstance(current, dict) or part not in current:
+            return None
+        current = current[part]
+    return current
+
+
+def _matches_operator(value: Any, operator: str, expected: Any) -> bool:
+    if operator == "$in":
+        return value in expected
+    if operator == "$exists":
+        exists = value is not None
+        return exists is bool(expected)
+    raise ValueError(f"Unsupported query operator: {operator}")
+
+
+def matches_filter(document: dict, query: dict | None) -> bool:
+    if not query:
+        return True
+    for key, expected in query.items():
+        if key == "$or":
+            if not any(matches_filter(document, branch) for branch in expected):
+                return False
+            continue
+        value = _get_by_dot_path(document, key)
+        if isinstance(expected, dict) and any(k.startswith("$") for k in expected):
+            for operator, operand in expected.items():
+                if not _matches_operator(value, operator, operand):
+                    return False
+            continue
+        if value != expected:
+            return False
+    return True
+
+
+def _apply_projection(document: dict, projection: dict | None) -> dict:
+    if not projection:
+        return copy.deepcopy(document)
+    include_keys = [key for key, enabled in projection.items() if enabled]
+    if not include_keys:
+        return copy.deepcopy(document)
+    return {
+        key: copy.deepcopy(_get_by_dot_path(document, key))
+        for key in include_keys
+        if _get_by_dot_path(document, key) is not None
+    }
+
+
+class LocalJsonCollection:
+    def __init__(self, path: Path):
+        self.path = path
+        self.path.parent.mkdir(parents=True, exist_ok=True)
+        resolved = self.path.resolve()
+        with _LOCKS_GUARD:
+            if resolved not in _LOCKS:
+                _LOCKS[resolved] = threading.RLock()
+            self._lock = _LOCKS[resolved]
+
+    def _load(self) -> list[dict]:
+        if not self.path.exists():
+            return []
+        with self.path.open("r", encoding="utf-8") as fh:
+            data = json.load(fh)
+        if isinstance(data, dict) and "records" in data:
+            data = data["records"]
+        if not isinstance(data, list):
+            raise ValueError(f"{self.path} must contain a JSON array.")
+        return data
+
+    def _write(self, records: list[dict]) -> None:
+        with self.path.open("w", encoding="utf-8") as fh:
+            json.dump(to_jsonable(records), fh, indent=2, sort_keys=True)
+            fh.write("\n")
+
+    def find(self, query: dict | None = None, projection: dict | None = None):
+        with self._lock:
+            rows = [
+                _apply_projection(row, projection)
+                for row in self._load()
+                if matches_filter(row, query)
+            ]
+        return rows
+
+    def find_one(self, query: dict | None = None, projection: dict | None = None):
+        rows = self.find(query=query, projection=projection)
+        return rows[0] if rows else None
+
+    def bulk_upsert(self, records: Iterable[dict]) -> dict:
+        records = [to_jsonable(record) for record in records]
+        with self._lock:
+            existing = self._load()
+            positions = {row.get("_id"): i for i, row in enumerate(existing)}
+            matched = 0
+            upserted = 0
+            for record in records:
+                record_id = record.get("_id")
+                if record_id is None:
+                    raise ValueError("Every record must contain an '_id' field.")
+                if record_id in positions:
+                    existing[positions[record_id]] = record
+                    matched += 1
+                else:
+                    positions[record_id] = len(existing)
+                    existing.append(record)
+                    upserted += 1
+            self._write(existing)
+        return {"matched_count": matched, "upserted_count": upserted}
+
+    def replace_all(self, records: Iterable[dict]) -> None:
+        with self._lock:
+            self._write([to_jsonable(record) for record in records])
+
+
+class CombinedJsonCollection:
+    def __init__(self, collections: list[LocalJsonCollection]):
+        self.collections = collections
+
+    def find(self, query: dict | None = None, projection: dict | None = None):
+        rows: list[dict] = []
+        for collection in self.collections:
+            rows.extend(collection.find(query=query, projection=projection))
+        return rows
+
+    def find_one(self, query: dict | None = None, projection: dict | None = None):
+        for collection in self.collections:
+            row = collection.find_one(query=query, projection=projection)
+            if row is not None:
+                return row
+        return None
+
+
+class LocalJsonDatabase:
+    def __init__(self, base_dir: Path, benchmark_dir: Path | None = None):
+        self.base_dir = Path(base_dir)
+        self.base_dir.mkdir(parents=True, exist_ok=True)
+        benchmark_base = Path(benchmark_dir) if benchmark_dir else self.base_dir
+        self._collections = {
+            name: LocalJsonCollection(
+                (benchmark_base if name == "benchmarks" else self.base_dir)
+                / f"{name}.json"
+            )
+            for name in COLLECTIONS
+        }
+
+    def __getitem__(self, collection_name: str):
+        return self._collections[collection_name]
+
+    def __getattr__(self, collection_name: str):
+        try:
+            return self._collections[collection_name]
+        except KeyError as exc:
+            raise AttributeError(collection_name) from exc
+
+
+class CombinedJsonDatabase:
+    def __init__(self, experiment_dirs: Iterable[Path], benchmark_dir: Path):
+        experiment_dbs = [
+            LocalJsonDatabase(Path(exp_dir), benchmark_dir=benchmark_dir)
+            for exp_dir in experiment_dirs
+        ]
+        benchmark_db = LocalJsonDatabase(benchmark_dir)
+        self._collections = {
+            "simulations": CombinedJsonCollection(
+                [db.simulations for db in experiment_dbs]
+            ),
+            "simulation_sessions": CombinedJsonCollection(
+                [db.simulation_sessions for db in experiment_dbs]
+            ),
+            "benchmarks": benchmark_db.benchmarks,
+            "findings": CombinedJsonCollection([db.findings for db in experiment_dbs]),
+        }
+
+    def __getitem__(self, collection_name: str):
+        return self._collections[collection_name]
+
+    def __getattr__(self, collection_name: str):
+        try:
+            return self._collections[collection_name]
+        except KeyError as exc:
+            raise AttributeError(collection_name) from exc

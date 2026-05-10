@@ -1,0 +1,43 @@
+from schema import Schema, And, Use
+
+GAME_DECISION_ARRAY_SCHEMA = {
+    "Dictator": Schema([Use(int)]),
+    "Ultimatum Strategy (Proposer)": Schema([Use(int)]),
+    "Ultimatum Strategy (Responder)": Schema([Use(int)]),
+    "Linear Public Good": Schema([Use(int)]),
+    "Trust (Investor)": Schema([Use(int)]),
+    "Trust (Banker)": Schema([Use(int)]),
+    # "Ultimatum Strategy": Schema([Use(int), Use(int)]),
+    "Bomb Risk": Schema([Use(int)]),
+    "Prisoner's Dilemma": Schema([Use(int)]),
+    "Random Number Generation": Schema([Use(int)]),
+    "Trust in CC09 (trustor)": Schema([Use(int)]),
+    "Trust in CC09 (trustee)": Schema([Use(int)]),
+    "BoS in CDJFR89": Schema([Use(int)]),
+    "Stag Hunt in CDFR92": Schema([Use(int)]),
+    "Arithmetic Verification": Schema([Use(int)]),
+    "Trivial Dominance": Schema([Use(int)]),
+    "TicTacToe Logic": Schema([Use(int)]),
+    "TicTacToe Logic - L2": Schema([Use(int)]),
+}
+
+GAME_DECISION_ARRAY_WITH_REASONING_SCHEMA = {
+    "Dictator": Schema([[Use(int)], And(str, len)]),
+    "Ultimatum Strategy (Proposer)": Schema([[Use(int)], And(str, len)]),
+    "Ultimatum Strategy (Responder)": Schema([[Use(int)], And(str, len)]),
+    "Linear Public Good": Schema([[Use(int)], And(str, len)]),
+    "Trust (Investor)": Schema([[Use(int)], And(str, len)]),
+    "Trust (Banker)": Schema([[Use(int)], And(str, len)]),
+    # "Ultimatum Strategy": Schema([[Use(int), Use(int)], And(str, len)]),
+    "Bomb Risk": Schema([[Use(int)], And(str, len)]),
+    "Prisoner's Dilemma": Schema([[Use(int)], And(str, len)]),
+    "Random Number Generation": Schema([[Use(int)], And(str, len)]),
+    "Trust in CC09 (trustor)": Schema([[Use(int)], And(str, len)]),
+    "Trust in CC09 (trustee)": Schema([[Use(int)], And(str, len)]),
+    "BoS in CDJFR89": Schema([[Use(int)], And(str, len)]),
+    "Stag Hunt in CDFR92": Schema([[Use(int)], And(str, len)]),
+    "Arithmetic Verification": Schema([[Use(int)], And(str, len)]),
+    "Trivial Dominance": Schema([[Use(int)], And(str, len)]),
+    "TicTacToe Logic": Schema([[Use(int)], And(str, len)]),
+    "TicTacToe Logic - L2": Schema([[Use(int)], And(str, len)]),
+}
