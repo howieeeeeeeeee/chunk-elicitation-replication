@@ -1,8 +1,7 @@
 # Chunk Elicitation Replication
 
 This folder is a standalone replication bundle for the chunk-elicitation
-simulation and analysis pipeline. It removes the MongoDB dependency from the
-main project. Simulation outputs are saved as local JSON files, and the
+simulation and analysis pipeline. Simulation outputs are saved as local JSON files, and the
 analysis script reads those files to regenerate LaTeX tables and figures.
 
 ## Repository Layout
@@ -55,20 +54,6 @@ The JSON shape matches the main project benchmark documents:
   "decisions": [[50], [0], [20]]
 }
 ```
-
-## Optional: Export Existing Simulation Outputs
-
-If you already have completed simulations in the main project's local MongoDB,
-you can export those simulation/session records into this replication folder
-from the main project root:
-
-```bash
-uv run python src/scripts/export-to-replication-folder.py
-```
-
-This is only a convenience for existing simulation outputs. The benchmark
-workflow above remains raw-data-first: rerun `scripts/01_Process_Benchmark.py`
-inside this folder whenever you want to regenerate benchmarks from scratch.
 
 ## Running Simulations
 
