@@ -1,0 +1,112 @@
+\documentclass[11pt]{article}
+\usepackage[margin=1in]{geometry}
+\usepackage{booktabs}
+\usepackage{graphicx}
+\usepackage{caption}
+\usepackage{float}
+\usepackage{amsmath}
+\usepackage{amssymb}
+\graphicspath{{figs/}}
+\setlength{\tabcolsep}{5pt}
+
+\title{Phase 2 / Phase 2 Context Analysis}
+\author{Howie Zhi-Hong Jian}
+\date{\today}
+
+\begin{document}
+\maketitle
+
+\section{Regression: Wasserstein-1 on phase\_2\_context}
+\begin{table}[H]
+\centering
+\caption{Regression of Wasserstein-1 on elicitation mode, observed context-incentive prompt-condition cells, and controls (phase\_2\_context). Column (1) is OLS; column (2) is a fractional logit (GLM, Binomial, logit link) with HC1 robust standard errors.}
+\label{tab:regression-w1-p2c}
+\input{tables/regression_w1_phase2_context}
+\end{table}
+
+\section{Overall Wasserstein-1 Summary (phase\_2)}
+\begin{table}[H]
+\centering
+\caption{Summary statistics of Wasserstein-1 by Mode and ChunkN over phase\_2 behavioral games (Explain Reasoning = True, Extra Flag = []).}
+\label{tab:w1-overall-p2}
+\input{tables/w1_overall_summary_phase2}
+\end{table}
+
+\section{Explain Reasoning On vs.\ Off (phase\_2)}
+\begin{table}[H]
+\centering
+\caption{Wasserstein-1 with Explain Reasoning on vs.\ off, restricted to Gemini-3 Flash and Qwen3-235 over ChunkN $\in \{1, 10, 20, 25\}$.}
+\label{tab:w1-reasoning-p2}
+\input{tables/w1_reasoning_on_off_phase2}
+\end{table}
+
+\section{Explain Reasoning On vs.\ Off -- Large Chunks (phase\_2)}
+\begin{table}[H]
+\centering
+\caption{Wasserstein-1 with Explain Reasoning on vs.\ off on phase\_2 behavioral games for ChunkN $\in \{50, 100\}$, grouped by ChunkN, Explain Reasoning, SplitN, and Reasoning Mode (chunk elicitation only). All LLM models included.}
+\label{tab:w1-reasoning-large-chunks-p2}
+\input{tables/w1_reasoning_on_off_large_chunks_phase2}
+\end{table}
+
+\section{Wasserstein-1 Summary by Mode (Ground-truth Games)}
+\begin{table}[H]
+\centering
+\caption{Wasserstein-1 summary statistics over the four ground-truth games (TicTacToe Logic L2, TicTacToe Logic, Arithmetic Verification, Trivial Dominance), phase\_2, ChunkN $\in \{1, 10\}$, Explain Reasoning = True.}
+\label{tab:gt-summary-mode}
+\input{tables/w1_summary_ground_truth_by_mode}
+\end{table}
+
+\section{Ground-truth Non-zero W1 with Error Rates}
+\begin{table}[H]
+\centering
+\caption{Simulations on ground-truth games (Explain Reasoning = True) where Wasserstein-1 $\neq 0$, with the share of decisions misaligned with the ground-truth benchmark (Misaligned \%). Each listed simulation pools $N=100$ decisions.}
+\label{tab:gt-errors}
+\input{tables/ground_truth_non_zero_error_rates}
+\end{table}
+
+\section{Random Number Generation Summary}
+\begin{table}[H]
+\centering
+\caption{Wasserstein-1 summary statistics for Random Number Generation, phase\_2, grouped by Mode, ChunkN, and Temperature, with Extra Flag = [] or small\_experiments\_on\_temperature.}
+\label{tab:w1-random-number-generation-p2}
+\input{tables/w1_random_number_generation_phase2}
+\end{table}
+
+\section{Figures}
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=\textwidth]{table2_raincloud_model_performance.png}
+\caption{Raincloud of W1 by LLM Model, split by elicitation mode (ChunkN=10 vs.\ Atomic).}
+\label{fig:raincloud-model}
+\end{figure}
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=\textwidth]{task1b_w1_by_game.png}
+\caption{Distribution of W1 by game, ChunkN=10 vs.\ Atomic.}
+\label{fig:w1-by-game}
+\end{figure}
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.7\textwidth]{task1c_atomic_vs_chunk10_scatter.png}
+\caption{Atomic vs.\ ChunkN=10 per-(Model, Game) mean Wasserstein-1. Each point is one (LLM Model, Game) pair over the phase\_2 behavioral-game scope; the dashed grey line is the equality reference. Points with $\alpha=0.1$ convey density; points below the line indicate ChunkN=10 reduces W1 relative to Atomic.}
+\label{fig:atomic-vs-chunk-scatter}
+\end{figure}
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=\textwidth]{task2_decision_distributions.png}
+\caption{Decision distributions across behavioral games: human benchmark vs.\ ChunkN=10 vs.\ Atomic.}
+\label{fig:dist-behavior}
+\end{figure}
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=\textwidth]{task2b_ground_truth_decision_distributions.png}
+\caption{Decision distributions for ground-truth games: benchmark vs.\ ChunkN=10 vs.\ Atomic.}
+\label{fig:dist-groundtruth}
+\end{figure}
+
+\end{document}
