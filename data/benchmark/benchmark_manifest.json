@@ -4,8 +4,24 @@
     "n": 4167
   },
   {
+    "game_type": "Trust (Investor)",
+    "n": 4167
+  },
+  {
     "game_type": "Linear Public Good",
     "n": 159
+  },
+  {
+    "game_type": "Ultimatum Strategy",
+    "n": 4587
+  },
+  {
+    "game_type": "Bomb Risk",
+    "n": 11713
+  },
+  {
+    "game_type": "Prisoner's Dilemma",
+    "n": 6365
   },
   {
     "game_type": "Ultimatum Strategy (Proposer)",
@@ -16,28 +32,24 @@
     "n": 4587
   },
   {
-    "game_type": "Bomb Risk",
-    "n": 11713
-  },
-  {
-    "game_type": "Prisoner's Dilemma",
-    "n": 1592
-  },
-  {
     "game_type": "Random Number Generation",
     "n": 100
-  },
-  {
-    "game_type": "Trust in CC09 (trustor)",
-    "n": 72
   },
   {
     "game_type": "Trust in CC09 (trustee)",
     "n": 72
   },
   {
+    "game_type": "Trust in CC09 (trustor)",
+    "n": 72
+  },
+  {
     "game_type": "BoS in CDJFR89",
     "n": 660
+  },
+  {
+    "game_type": "Stag Hung in CDFR92",
+    "n": 329
   },
   {
     "game_type": "Stag Hunt in CDFR92",
