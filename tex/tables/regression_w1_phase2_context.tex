@@ -1,0 +1,35 @@
+\begin{tabular}{lcc}
+\toprule
+ & (1) OLS & (2) Fractional Logit \\
+\midrule
+Chunk & -0.141$^{***}$ & -0.982$^{***}$ \\
+ & (0.007) & (0.054) \\
+Lab & -0.005 & -0.034 \\
+ & (0.014) & (0.091) \\
+Lab $\times$ Low & -0.006 & -0.041 \\
+ & (0.014) & (0.090) \\
+Lab $\times$ High & -0.012 & -0.085 \\
+ & (0.014) & (0.095) \\
+Classroom & -0.003 & -0.022 \\
+ & (0.014) & (0.092) \\
+Classroom $\times$ Low & -0.006 & -0.041 \\
+ & (0.014) & (0.092) \\
+Classroom $\times$ High & 0.015 & 0.100 \\
+ & (0.014) & (0.103) \\
+Private & -0.006 & -0.038 \\
+ & (0.009) & (0.062) \\
+Public & -0.010 & -0.067 \\
+ & (0.009) & (0.062) \\
+Reasoning & 0.000 & 0.003 \\
+ & (0.007) & (0.051) \\
+Intercept & 0.263$^{***}$ & -1.021$^{***}$ \\
+ & (0.012) & (0.081) \\
+\midrule N & 672 & 672 \\
+R$^2$ & 0.356 & -- \\
+Adj.\ R$^2$ & 0.346 & -- \\
+Pseudo R$^2$ & -- & 0.358 \\
+Log-likelihood & 621.649 & -220.401 \\
+\bottomrule
+\end{tabular}
+
+\par\smallskip\footnotesize \textit{Notes:} Dependent variable = Wasserstein-1. Standard errors in parentheses (HC1 robust for Fractional Logit). Prompt-condition reference = ``Not Specified / Not Specified'' (no context, no incentive). Privacy Treatment reference = ``Not Specified''. Significance: $^{*}p<0.05$, $^{**}p<0.01$, $^{***}p<0.001$.
