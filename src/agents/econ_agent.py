@@ -3,7 +3,6 @@ from .instruction_setup import *
 from utils.validation import validate_input
 from utils.logging import setup_logger
 from .llm_service import LLMService
-from .response_formatter import ResponseFormatter
 import time
 
 logger = setup_logger(__name__)
@@ -19,7 +18,6 @@ class EconomicAgent:
         self.instruction_config = instruction_config
         self.llm_config = llm_config
         self.llm_service = LLMService(llm_config)
-        self.response_formatter = None
         self._split_messages = None
         self._split_chunks_done = 0
         self._split_total_chunks = 0
@@ -275,13 +273,9 @@ class EconomicAgent:
         start_time = time.time()
         try:
             messages = self._prepare_messages()
-            require_response_formatter = (
-                self.simulation_config.get("output_format", "json") == "free_response"
-            )  ## deprecated
             result, usage, extra = self.llm_service.get_completion(
                 messages=messages,
                 return_raw_response=self.llm_config.get("return_raw_response", False),
-                # require_response_formatter=require_response_formatter,
                 save_messages_n_contents=self.simulation_config.get(
                     "save_messages_n_contents", False
                 ),
@@ -289,20 +283,6 @@ class EconomicAgent:
                     "return_all_api_responses", False
                 ),
             )
-            if require_response_formatter:
-                self.response_formatter = ResponseFormatter(
-                    simulation_config=self.simulation_config,
-                    instruction_config=self.instruction_config,
-                    content=result,
-                )
-                success, formatted_output = (
-                    self.response_formatter.get_formatted_output()
-                )
-                if success:
-                    result = formatted_output["result"]
-                    extra["formatted_output"] = formatted_output
-                else:
-                    raise Exception(formatted_output["msg"])
 
             elapsed_time = time.time() - start_time
             return True, {

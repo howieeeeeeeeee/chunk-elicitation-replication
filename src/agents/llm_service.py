@@ -9,13 +9,6 @@ from utils.logging import setup_logger
 
 logger = setup_logger(__name__)
 
-AVAIBLE_MODELS = {
-    "openai": ["gpt-4o", "o4-mini"],
-    "ollama": ["deepseek-r1:14b"],
-    "openrouter": ["gemini-2.5-flash"],
-}
-
-
 class LLMService:
     """Service for interacting with Language Learning Models (LLM)."""
 
@@ -184,7 +177,6 @@ class LLMService:
 
         Args:
             messages: List of message dictionaries
-            require_response_formatter: Whether to require response formatting - kept for backward compatibility
             save_messages_n_contents: Whether to save messages and content in extra info
             return_raw_response: Whether to return raw response without processing
 
