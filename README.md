@@ -1,9 +1,9 @@
 # Chunk Elicitation Replication
 
 This folder is a standalone replication bundle for the chunk-elicitation
-simulation and analysis pipeline. Simulation outputs are saved only as local
-JSON files, and the analysis script reads those files to regenerate LaTeX
-tables and figures. This repository never connects to MongoDB.
+simulation and analysis pipeline. Simulation outputs are saved as local JSON files, and the
+analysis script reads those files to regenerate LaTeX tables and figures. This
+repository does not connect to MongoDB.
 
 ## Repository Layout
 
@@ -58,25 +58,11 @@ The JSON shape matches the main project benchmark documents:
 
 ## Running Simulations
 
-The three runners use declarative manifests in `scripts/experiment_specs.py`.
-They save only to the local-JSON database in this repository and never connect
-to MongoDB. Their semantic manifests match the MongoDB-backed formal runners in
-the main project; only the persistence adapter and CLI storage option differ.
-`scripts/plan.py` expands the plain manifests, while `scripts/_common.py` only
-handles the local-JSON CLI and execution.
-
-| Runner | Phase and tags | Formal scope | Planned cells |
-| --- | --- | --- | ---: |
-| `02_Run_Experiment_1.py` | `phase_2_context`, `extraFlag=[]` | Eight games, GPT-5.2, Atomic/ChunkN=10, reasoning on/off, context-incentive and privacy treatments | 672 |
-| `03_Run_Experiment_2.py` | `phase_2`; main `extraFlag=[]`; reasoning-removal tag | Ten behavioral games, eight models, ChunkN 1/10/20/25/50/100 | 1,320 |
-| `04_Run_Experiment_3.py` | `phase_2`; main `extraFlag=[]`; temperature tag | Four deterministic tasks and random-number generation, Atomic/ChunkN=10, Atomic temperature=2 | 165 |
-
-The robustness tags are exactly
-`small_experiments_on_removing_reasoning` and
-`small_experiments_on_temperature`. A planned cell can be missing or failed;
-the dry-run report distinguishes planned, completed, incomplete, missing,
-duplicate, and legacy records. Existing failed/incomplete cells are not retried
-unless `--retry-incomplete` is supplied explicitly.
+Each runner keeps its experiment settings directly in the script so the exact
+games, models, phase, tags, and treatment combinations are easy to inspect.
+The scripts write only to `data/exp1`, `data/exp2`, and `data/exp3` as local
+JSON. Use `--dry-run` to inspect existing and remaining cells without calling
+an LLM API.
 
 First inspect each plan without calling any LLM APIs:
 
@@ -100,12 +86,6 @@ The top-level output folder is controlled by `--data-root`:
 ```bash
 uv run python scripts/03_Run_Experiment_2.py --data-root data --yes
 ```
-
-Dry runs read the JSON file directly and do not create output directories or
-write JSON. The included exported snapshot can contain legacy records outside
-the formal manifests, including the excluded Gemini 3 Pro preview and broader
-historical Experiment 3 configurations. They remain as provenance but are
-reported as legacy and are not added to a formal rerun plan.
 
 ## Running Analysis
 
