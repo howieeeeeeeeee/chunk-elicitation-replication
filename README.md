@@ -1,9 +1,10 @@
 # Chunk Elicitation Replication
 
-This folder is a standalone replication bundle for the chunk-elicitation
-simulation and analysis pipeline. Simulation outputs are saved as local JSON files, and the
-analysis script reads those files to regenerate LaTeX tables and figures. This
-repository does not connect to MongoDB.
+This is the official replication package for Jian and Chen (2026), *The
+sampling unit shapes behavioural similarity in large language model
+simulations*. Simulation outputs are included as local JSON files, so readers
+can inspect the existing data and run the analysis without rerunning the
+simulations. This repository does not connect to MongoDB.
 
 ## Repository Layout
 
@@ -89,7 +90,7 @@ uv run python scripts/03_Run_Experiment_2.py --data-root data --yes
 
 ## Running Analysis
 
-After rebuilding benchmarks and running simulations:
+To analyze the included simulation data without rerunning the simulations:
 
 ```bash
 uv run python scripts/05_Run_Analysis.py
