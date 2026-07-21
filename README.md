@@ -2,7 +2,8 @@
 
 This folder is a standalone replication bundle for the chunk-elicitation
 simulation and analysis pipeline. Simulation outputs are saved as local JSON files, and the
-analysis script reads those files to regenerate LaTeX tables and figures.
+analysis script reads those files to regenerate LaTeX tables and figures. This
+repository does not connect to MongoDB.
 
 ## Repository Layout
 
@@ -56,6 +57,12 @@ The JSON shape matches the main project benchmark documents:
 ```
 
 ## Running Simulations
+
+Each runner keeps its experiment settings directly in the script so the exact
+games, models, phase, tags, and treatment combinations are easy to inspect.
+The scripts write only to `data/exp1`, `data/exp2`, and `data/exp3` as local
+JSON. Use `--dry-run` to inspect existing and remaining cells without calling
+an LLM API.
 
 First inspect each plan without calling any LLM APIs:
 

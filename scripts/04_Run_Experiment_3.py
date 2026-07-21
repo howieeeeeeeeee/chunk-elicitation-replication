@@ -1,3 +1,10 @@
+"""Run Experiment 3 and its temperature check into local JSON.
+
+Covers four deterministic tasks and random-number generation across eight
+models in phase_2, plus the Atomic temperature=2 cells tagged
+small_experiments_on_temperature (165 cells).
+"""
+
 from __future__ import annotations
 
 from _common import (
@@ -53,7 +60,9 @@ PARAMETER_COMBINATIONS = {
 }
 
 TEMP_PARAMETER_COMBINATIONS = {
-    "with_thinking": make_combos(TEMP_ROBUSTNESS_COMBOS, reasoning_values=[False]),
+    "with_thinking": make_combos(
+        TEMP_ROBUSTNESS_COMBOS, reasoning_values=[True, False]
+    ),
     "without_thinking": make_combos(TEMP_ROBUSTNESS_COMBOS, reasoning_values=[False]),
 }
 
@@ -155,4 +164,3 @@ def main() -> None:
 
 if __name__ == "__main__":
     main()
-

@@ -1,3 +1,10 @@
+"""Run Experiment 1 into local JSON.
+
+Covers eight behavioral games with GPT-5.2, phase_2_context, an empty
+extraFlag, Atomic and ChunkN=10 elicitation, reasoning on/off, seven
+context-incentive cells, and three privacy treatments (672 cells).
+"""
+
 from __future__ import annotations
 
 from _common import (

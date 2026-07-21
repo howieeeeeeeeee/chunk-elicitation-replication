@@ -1,3 +1,10 @@
+"""Run Experiment 2 and its reasoning-removal check into local JSON.
+
+Covers ten behavioral games, eight models, phase_2, Atomic and ChunkN
+10/20/25/50/100, plus the small_experiments_on_removing_reasoning tag
+(1,320 cells).
+"""
+
 from __future__ import annotations
 
 from _common import (
@@ -60,7 +67,9 @@ REASONING_OFF_MODELS = {
 }
 
 REASONING_OFF_PARAMETER_COMBINATIONS = {
-    "with_thinking": make_combos(REASONING_OFF_COMBOS, reasoning_values=[False]),
+    "with_thinking": make_combos(
+        REASONING_OFF_COMBOS, reasoning_values=[True, False]
+    ),
     "without_thinking": make_combos(REASONING_OFF_COMBOS, reasoning_values=[False]),
 }
 
@@ -153,4 +162,3 @@ def main() -> None:
 
 if __name__ == "__main__":
     main()
-

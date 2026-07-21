@@ -1,3 +1,5 @@
+"""Shared local-JSON helpers used by the three public runners."""
+
 from __future__ import annotations
 
 import argparse
