@@ -2,13 +2,21 @@ from __future__ import annotations
 
 import copy
 import json
+import os
 import threading
+import uuid
 from datetime import date, datetime
 from pathlib import Path
 from typing import Any, Iterable
 
 
-COLLECTIONS = ("simulations", "simulation_sessions", "benchmarks", "findings")
+COLLECTIONS = (
+    "simulations",
+    "simulation_sessions",
+    "embeddings",
+    "benchmarks",
+    "findings",
+)
 _LOCKS_GUARD = threading.RLock()
 _LOCKS: dict[Path, threading.RLock] = {}
 
@@ -78,7 +86,6 @@ def _apply_projection(document: dict, projection: dict | None) -> dict:
 class LocalJsonCollection:
     def __init__(self, path: Path):
         self.path = path
-        self.path.parent.mkdir(parents=True, exist_ok=True)
         resolved = self.path.resolve()
         with _LOCKS_GUARD:
             if resolved not in _LOCKS:
@@ -97,9 +104,20 @@ class LocalJsonCollection:
         return data
 
     def _write(self, records: list[dict]) -> None:
-        with self.path.open("w", encoding="utf-8") as fh:
-            json.dump(to_jsonable(records), fh, indent=2, sort_keys=True)
-            fh.write("\n")
+        self.path.parent.mkdir(parents=True, exist_ok=True)
+        temporary_path = self.path.with_name(
+            f".{self.path.name}.{uuid.uuid4().hex}.tmp"
+        )
+        try:
+            with temporary_path.open("w", encoding="utf-8") as fh:
+                json.dump(to_jsonable(records), fh, indent=2, sort_keys=True)
+                fh.write("\n")
+                fh.flush()
+                os.fsync(fh.fileno())
+            temporary_path.replace(self.path)
+        finally:
+            if temporary_path.exists():
+                temporary_path.unlink()
 
     def find(self, query: dict | None = None, projection: dict | None = None):
         with self._lock:
@@ -161,7 +179,6 @@ class CombinedJsonCollection:
 class LocalJsonDatabase:
     def __init__(self, base_dir: Path, benchmark_dir: Path | None = None):
         self.base_dir = Path(base_dir)
-        self.base_dir.mkdir(parents=True, exist_ok=True)
         benchmark_base = Path(benchmark_dir) if benchmark_dir else self.base_dir
         self._collections = {
             name: LocalJsonCollection(
@@ -194,6 +211,9 @@ class CombinedJsonDatabase:
             ),
             "simulation_sessions": CombinedJsonCollection(
                 [db.simulation_sessions for db in experiment_dbs]
+            ),
+            "embeddings": CombinedJsonCollection(
+                [db.embeddings for db in experiment_dbs]
             ),
             "benchmarks": benchmark_db.benchmarks,
             "findings": CombinedJsonCollection([db.findings for db in experiment_dbs]),

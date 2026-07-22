@@ -14,10 +14,12 @@ simulations. This repository does not connect to MongoDB.
 - `scripts/03_Run_Experiment_2.py`: runs Experiment 2 into `data/exp2/`.
 - `scripts/04_Run_Experiment_3.py`: runs Experiment 3 into `data/exp3/`.
 - `scripts/05_Run_Analysis.py`: reads local JSON and writes `tex/` artifacts.
+- `scripts/06_Run_Embeddings.py`: guarded reasoning-embedding runner for experiment-local JSON.
 - `data/raw/`: duplicated raw benchmark inputs used by the benchmark processor.
 - `data/benchmark/benchmarks.json`: generated benchmark records.
 - `data/exp*/simulations.json`: simulation-level records.
 - `data/exp*/simulation_sessions.json`: session-level model outputs.
+- `data/exp*/embeddings.json`: deterministic decision-level reasoning embeddings and attempt history.
 - `tex/tables/` and `tex/figs/`: analysis outputs for paper tables/figures.
 
 ## Setup
@@ -106,12 +108,45 @@ The analysis script reads `data/exp1`, `data/exp2`, `data/exp3`, and
 The generated `tex/result.tex` is a compact article-style wrapper that inputs
 the tables and figures.
 
+## Running Reasoning Embeddings
+
+The embedding runner is intentionally non-runnable as checked in: its
+simulation list is empty and its model is a placeholder. Confirm the safe
+default without creating files, calling OpenRouter, or writing local JSON:
+
+```bash
+uv run python scripts/06_Run_Embeddings.py --dry-run
+```
+
+Select one experiment, explicit simulation ids, and a concrete OpenRouter
+embedding model. Dry-run reads only the selected experiment JSON and reports
+eligibility and existing-state counts:
+
+```bash
+uv run python scripts/06_Run_Embeddings.py \
+  --experiment exp1 \
+  --simulation-id <simulation-id> \
+  --model <openrouter-embedding-model> \
+  --dry-run
+```
+
+Applied mode runs sequentially and requires confirmation or `--yes`. It reads
+`OPENROUTER_API_KEY` only from the environment, skips existing successes, and
+allows one new attempt for a prior failure in a later invocation.
+
 ## Local JSON Contract
 
-Each experiment folder stores two collections:
+Each experiment folder stores three collections:
 
 - `simulations.json`: one record per simulation configuration.
 - `simulation_sessions.json`: one record per LLM call/session.
+- `embeddings.json`: one record per simulation-session decision index and
+  sanitized embedding configuration.
+
+The main repository export is an exact one-way snapshot. A later run of
+`src/scripts/export-to-replication-folder.py` in the main repository atomically
+replaces managed experiment JSON, including `embeddings.json`; replication-local
+embedding records may therefore be intentionally replaced.
 
 The simulation record keeps references to session IDs:
 

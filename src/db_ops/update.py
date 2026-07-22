@@ -1,3 +1,6 @@
+from db_ops.embeddings import update_embeddings
+
+
 def update_to_collection(db, collection_name, data):
     try:
         result = db[collection_name].bulk_upsert(data)
@@ -17,4 +20,3 @@ def update_simulation_sessions(db, data):
 
 def update_findings(db, data):
     return update_to_collection(db, "findings", data)
-

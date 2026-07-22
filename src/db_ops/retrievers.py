@@ -1,3 +1,48 @@
+from db_ops.embeddings import (
+    find_embedding,
+    find_successful_embedding,
+    query_embeddings,
+)
+
+
+def get_embedding(_db, embedding_id):
+    return find_embedding(_db, embedding_id)
+
+
+def get_successful_embedding(_db, embedding_id):
+    return find_successful_embedding(_db, embedding_id)
+
+
+def get_embeddings_by_simulation(
+    _db, simulation_id, embedding_config_hash=None, success=None
+):
+    return query_embeddings(
+        _db,
+        simulation_id=simulation_id,
+        embedding_config_hash=embedding_config_hash,
+        success=success,
+    )
+
+
+def get_embeddings_by_session(
+    _db, simulation_session_id, embedding_config_hash=None, success=None
+):
+    return query_embeddings(
+        _db,
+        simulation_session_id=simulation_session_id,
+        embedding_config_hash=embedding_config_hash,
+        success=success,
+    )
+
+
+def get_embeddings_by_config(_db, embedding_config_hash, success=None):
+    return query_embeddings(
+        _db,
+        embedding_config_hash=embedding_config_hash,
+        success=success,
+    )
+
+
 def get_simulation(_db, simulation_id):
     return _db.simulations.find_one({"_id": simulation_id})
 
@@ -54,4 +99,3 @@ def get_all_simulation_results(_db, simulation_ids):
             decisions.extend(session_to_decisions.get(session_id, []))
         results[sim_id] = decisions
     return results
-
