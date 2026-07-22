@@ -48,6 +48,8 @@ class ReplicationEmbeddingRunnerTests(unittest.TestCase):
                     [
                         {
                             "_id": "simulation-1",
+                            "completed": True,
+                            "archived": False,
                             "instruction_config": {"explain_reasoning": True},
                             "simulation_sessions": ["session-1"],
                         }
@@ -61,6 +63,8 @@ class ReplicationEmbeddingRunnerTests(unittest.TestCase):
                         {
                             "_id": "session-1",
                             "simulation_id": "simulation-1",
+                            "agent_response_success": True,
+                            "schema_check_pass": True,
                             "decisions": [[[1], "private reasoning"]],
                         }
                     ]

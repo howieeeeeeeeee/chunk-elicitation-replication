@@ -23,8 +23,31 @@ class EmbeddingSourceError(EmbeddingRequestError):
     """A structured failure caused by a missing or malformed source value."""
 
 
+class EmbeddingEligibilityError(ValueError):
+    """Raised when source records are not eligible for embedding."""
+
+
 def _source_error(code: str, message: str) -> EmbeddingSourceError:
     return EmbeddingSourceError(code, message)
+
+
+def _require_ready_simulation(simulation: dict, simulation_id: str) -> None:
+    if simulation.get("completed") is not True:
+        raise EmbeddingEligibilityError(
+            f"Simulation id={simulation_id} is not completed."
+        )
+    if simulation.get("archived") is not False:
+        raise EmbeddingEligibilityError(f"Simulation id={simulation_id} is archived.")
+
+
+def _require_successful_session(session: dict, simulation_session_id: str) -> None:
+    if (
+        session.get("agent_response_success") is not True
+        or session.get("schema_check_pass") is not True
+    ):
+        raise EmbeddingEligibilityError(
+            f"Simulation session id={simulation_session_id} is not successful."
+        )
 
 
 def _result(status: str, embedding_id: str, *, attempted: bool, reason: str) -> dict:
@@ -135,6 +158,7 @@ def embed_decision_reasoning(
         return _result(
             "missing", embedding_id, attempted=False, reason="missing_session"
         )
+    _require_successful_session(session, simulation_session_id)
     simulation_id = session.get("simulation_id")
     if not isinstance(simulation_id, str) or not simulation_id:
         active_logger.warning("Missing simulation id for embedding_id=%s", embedding_id)
@@ -264,6 +288,7 @@ def embed_simulation_session(
         summary["missing"] = 1
         active_logger.warning("Missing simulation session id=%s", simulation_session_id)
         return summary
+    _require_successful_session(session, simulation_session_id)
     decisions = session.get("decisions")
     if not isinstance(decisions, list):
         summary["malformed"] = 1
@@ -327,6 +352,7 @@ def embed_simulation(
         summary["missing"] = 1
         active_logger.warning("Missing simulation id=%s", simulation_id)
         return summary
+    _require_ready_simulation(simulation, simulation_id)
     if simulation.get("instruction_config", {}).get("explain_reasoning") is not True:
         summary["skipped"] = 1
         active_logger.warning("Reasoning is not enabled for simulation id=%s", simulation_id)
@@ -397,6 +423,7 @@ def summarize_embedding_plan(
         if simulation is None:
             summary["missing_simulations"] += 1
             continue
+        _require_ready_simulation(simulation, simulation_id)
         if simulation.get("instruction_config", {}).get("explain_reasoning") is not True:
             summary["ineligible_simulations"] += 1
             continue
@@ -414,6 +441,7 @@ def summarize_embedding_plan(
             if session is None:
                 summary["missing_sessions"] += 1
                 continue
+            _require_successful_session(session, session_id)
             decisions = session.get("decisions")
             if not isinstance(decisions, list):
                 summary["malformed"] += 1

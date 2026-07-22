@@ -17,6 +17,7 @@ from embedding.entities import (
     validate_embedding_entity,
 )
 from embedding.orchestration import (
+    EmbeddingEligibilityError,
     embed_decision_reasoning,
     embed_simulation,
     embed_simulation_session,
@@ -26,6 +27,7 @@ from embedding.orchestration import (
 
 __all__ = [
     "EmbeddingConfigurationError",
+    "EmbeddingEligibilityError",
     "EmbeddingRequestError",
     "build_embedding_entity",
     "embedding_config_hash",

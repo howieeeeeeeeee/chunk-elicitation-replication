@@ -24,3 +24,8 @@ and latest usage, compact attempt history, and UTC timestamps. A source failure
 may store `input_text: null` when the reasoning value is unavailable. Only a
 successful vector is stored at top level; attempt history never duplicates
 vectors or stores raw responses, request headers, or credentials.
+
+Before planning or processing, a simulation must be completed and explicitly
+unarchived. Every referenced session must have both a successful agent response
+and a passing schema check. Ineligible source records raise before any request
+or embedding write.
