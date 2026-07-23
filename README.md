@@ -20,6 +20,8 @@ simulations. This repository does not connect to MongoDB.
 - `data/exp*/simulations.json`: simulation-level records.
 - `data/exp*/simulation_sessions.json`: session-level model outputs.
 - `data/exp*/embeddings.json`: deterministic decision-level reasoning embeddings and attempt history.
+- `data/derived/pca_analyses.json`: shared PCA lifecycle and aligned coordinates for exported embeddings.
+- `data/derived/kmeans_analyses.json`: shared raw/PCA clustering lifecycle and nested per-cluster summary histories.
 - `tex/tables/` and `tex/figs/`: analysis outputs for paper tables/figures.
 
 ## Setup
@@ -143,10 +145,26 @@ Each experiment folder stores three collections:
 - `embeddings.json`: one record per simulation-session decision index and
   sanitized embedding configuration.
 
+Derived analyses are shared across experiments because one selected embedding
+set may span `exp1`, `exp2`, and `exp3`:
+
+- `data/derived/pca_analyses.json` stores PCA identities, configurations,
+  attempts, and aligned coordinates.
+- `data/derived/kmeans_analyses.json` stores clustering over raw embeddings or
+  one completed PCA entity plus independently resumable per-cluster summaries.
+
+Both experiment-local and combined database handles expose these two shared
+collections through `src/db_ops/`; they are never duplicated into experiment
+folders. These modules define persistence only and do not compute PCA, run
+k-means, or call OpenRouter.
+
 The main repository export is an exact one-way snapshot. A later run of
 `src/scripts/export-to-replication-folder.py` in the main repository atomically
 replaces managed experiment JSON, including `embeddings.json`; replication-local
-embedding records may therefore be intentionally replaced.
+embedding records may therefore be intentionally replaced. The same rule
+applies to managed files under `data/derived/`. A PCA record is exported only
+when all referenced embeddings exist in the public snapshot; a PCA-derived
+k-means record also requires its referenced PCA entity.
 
 The simulation record keeps references to session IDs:
 

@@ -1,4 +1,6 @@
 from db_ops.embeddings import update_embeddings
+from db_ops.kmeans_analyses import update_kmeans_analyses
+from db_ops.pca_analyses import update_pca_analyses
 
 
 def update_to_collection(db, collection_name, data):

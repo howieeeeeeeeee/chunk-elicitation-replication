@@ -10,13 +10,18 @@ from pathlib import Path
 from typing import Any, Iterable
 
 
-COLLECTIONS = (
+EXPERIMENT_COLLECTIONS = (
     "simulations",
     "simulation_sessions",
     "embeddings",
     "benchmarks",
     "findings",
 )
+DERIVED_COLLECTIONS = (
+    "pca_analyses",
+    "kmeans_analyses",
+)
+COLLECTIONS = EXPERIMENT_COLLECTIONS + DERIVED_COLLECTIONS
 _LOCKS_GUARD = threading.RLock()
 _LOCKS: dict[Path, threading.RLock] = {}
 
@@ -177,16 +182,30 @@ class CombinedJsonCollection:
 
 
 class LocalJsonDatabase:
-    def __init__(self, base_dir: Path, benchmark_dir: Path | None = None):
+    def __init__(
+        self,
+        base_dir: Path,
+        benchmark_dir: Path | None = None,
+        derived_dir: Path | None = None,
+    ):
         self.base_dir = Path(base_dir)
         benchmark_base = Path(benchmark_dir) if benchmark_dir else self.base_dir
+        derived_base = (
+            Path(derived_dir) if derived_dir else self.base_dir.parent / "derived"
+        )
         self._collections = {
             name: LocalJsonCollection(
                 (benchmark_base if name == "benchmarks" else self.base_dir)
                 / f"{name}.json"
             )
-            for name in COLLECTIONS
+            for name in EXPERIMENT_COLLECTIONS
         }
+        self._collections.update(
+            {
+                name: LocalJsonCollection(derived_base / f"{name}.json")
+                for name in DERIVED_COLLECTIONS
+            }
+        )
 
     def __getitem__(self, collection_name: str):
         return self._collections[collection_name]
@@ -199,12 +218,29 @@ class LocalJsonDatabase:
 
 
 class CombinedJsonDatabase:
-    def __init__(self, experiment_dirs: Iterable[Path], benchmark_dir: Path):
+    def __init__(
+        self,
+        experiment_dirs: Iterable[Path],
+        benchmark_dir: Path,
+        derived_dir: Path | None = None,
+    ):
+        derived_base = (
+            Path(derived_dir)
+            if derived_dir
+            else Path(benchmark_dir).parent / "derived"
+        )
         experiment_dbs = [
-            LocalJsonDatabase(Path(exp_dir), benchmark_dir=benchmark_dir)
+            LocalJsonDatabase(
+                Path(exp_dir),
+                benchmark_dir=benchmark_dir,
+                derived_dir=derived_base,
+            )
             for exp_dir in experiment_dirs
         ]
-        benchmark_db = LocalJsonDatabase(benchmark_dir)
+        benchmark_db = LocalJsonDatabase(
+            benchmark_dir,
+            derived_dir=derived_base,
+        )
         self._collections = {
             "simulations": CombinedJsonCollection(
                 [db.simulations for db in experiment_dbs]
@@ -217,6 +253,12 @@ class CombinedJsonDatabase:
             ),
             "benchmarks": benchmark_db.benchmarks,
             "findings": CombinedJsonCollection([db.findings for db in experiment_dbs]),
+            "pca_analyses": LocalJsonCollection(
+                derived_base / "pca_analyses.json"
+            ),
+            "kmeans_analyses": LocalJsonCollection(
+                derived_base / "kmeans_analyses.json"
+            ),
         }
 
     def __getitem__(self, collection_name: str):
