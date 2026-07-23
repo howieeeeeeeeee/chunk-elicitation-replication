@@ -90,6 +90,46 @@ class ReplicationEmbeddingRunnerTests(unittest.TestCase):
     @patch.object(runner, "summarize_embedding_plan")
     @patch.object(runner, "embed_simulation")
     @patch.object(runner, "setup_embedding_indexes")
+    def test_ineligible_source_returns_controlled_status(
+        self, setup_indexes, embed_simulation, summarize
+    ):
+        summarize.side_effect = runner.EmbeddingEligibilityError(
+            "source is archived"
+        )
+        status = runner.main(
+            [
+                "--simulation-id",
+                "simulation-1",
+                "--model",
+                "embedding/model",
+                "--dry-run",
+            ],
+            database_factory=lambda **_: object(),
+        )
+        self.assertEqual(2, status)
+        setup_indexes.assert_not_called()
+        embed_simulation.assert_not_called()
+
+        summarize.side_effect = None
+        summarize.return_value = PLAN
+        embed_simulation.side_effect = runner.EmbeddingEligibilityError(
+            "source became incomplete"
+        )
+        status = runner.main(
+            [
+                "--simulation-id",
+                "simulation-1",
+                "--model",
+                "embedding/model",
+                "--yes",
+            ],
+            database_factory=lambda **_: object(),
+        )
+        self.assertEqual(2, status)
+
+    @patch.object(runner, "summarize_embedding_plan")
+    @patch.object(runner, "embed_simulation")
+    @patch.object(runner, "setup_embedding_indexes")
     def test_confirmation_and_yes_gate_applied_calls(
         self, setup_indexes, embed_simulation, summarize
     ):

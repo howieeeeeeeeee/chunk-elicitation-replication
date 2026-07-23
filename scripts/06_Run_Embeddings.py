@@ -17,7 +17,11 @@ load_dotenv(REPLICATION_ROOT / ".env")
 from db_ops.config import get_database
 from db_ops.embeddings import setup_embedding_indexes
 from embedding.config import EmbeddingConfigurationError, normalize_embedding_config
-from embedding.orchestration import embed_simulation, summarize_embedding_plan
+from embedding.orchestration import (
+    EmbeddingEligibilityError,
+    embed_simulation,
+    summarize_embedding_plan,
+)
 
 
 logger = logging.getLogger(__name__)
@@ -117,9 +121,13 @@ def main(argv=None, *, database_factory=get_database, input_func=input) -> int:
         data_root=args.data_root,
         experiment_name=args.experiment,
     )
-    summary = summarize_embedding_plan(
-        db, simulation_ids, embedding_config, active_logger=logger
-    )
+    try:
+        summary = summarize_embedding_plan(
+            db, simulation_ids, embedding_config, active_logger=logger
+        )
+    except EmbeddingEligibilityError as error:
+        logger.warning("Embedding source is not eligible: %s", error)
+        return 2
     _log_plan(summary, args.experiment)
     if args.dry_run:
         logger.info("Dry run complete; no files, API calls, or writes occurred.")
@@ -142,13 +150,17 @@ def main(argv=None, *, database_factory=get_database, input_func=input) -> int:
     attempted_ids = set()
     totals = {"processed": 0, "succeeded": 0, "failed": 0, "skipped": 0}
     for simulation_id in simulation_ids:
-        result = embed_simulation(
-            db,
-            simulation_id,
-            embedding_config,
-            attempted_ids=attempted_ids,
-            active_logger=logger,
-        )
+        try:
+            result = embed_simulation(
+                db,
+                simulation_id,
+                embedding_config,
+                attempted_ids=attempted_ids,
+                active_logger=logger,
+            )
+        except EmbeddingEligibilityError as error:
+            logger.warning("Embedding source became ineligible: %s", error)
+            return 2
         for field in totals:
             totals[field] += result[field]
     logger.info(

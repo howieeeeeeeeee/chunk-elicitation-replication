@@ -50,6 +50,17 @@ def _require_successful_session(session: dict, simulation_session_id: str) -> No
         )
 
 
+def _require_ready_parent_simulation(
+    db, simulation_id: str, simulation_session_id: str
+) -> None:
+    simulation = db["simulations"].find_one({"_id": simulation_id})
+    if simulation is None:
+        raise EmbeddingEligibilityError(
+            f"Parent simulation for session id={simulation_session_id} is missing."
+        )
+    _require_ready_simulation(simulation, simulation_id)
+
+
 def _result(status: str, embedding_id: str, *, attempted: bool, reason: str) -> dict:
     return {
         "status": status,
@@ -165,6 +176,7 @@ def embed_decision_reasoning(
         return _result(
             "malformed", embedding_id, attempted=False, reason="missing_simulation_id"
         )
+    _require_ready_parent_simulation(db, simulation_id, simulation_session_id)
 
     decisions = session.get("decisions")
     if not isinstance(decisions, list) or decision_index >= len(decisions):
@@ -289,6 +301,12 @@ def embed_simulation_session(
         active_logger.warning("Missing simulation session id=%s", simulation_session_id)
         return summary
     _require_successful_session(session, simulation_session_id)
+    simulation_id = session.get("simulation_id")
+    if not isinstance(simulation_id, str) or not simulation_id:
+        raise EmbeddingEligibilityError(
+            f"Simulation session id={simulation_session_id} has no parent simulation."
+        )
+    _require_ready_parent_simulation(db, simulation_id, simulation_session_id)
     decisions = session.get("decisions")
     if not isinstance(decisions, list):
         summary["malformed"] = 1
@@ -442,6 +460,12 @@ def summarize_embedding_plan(
                 summary["missing_sessions"] += 1
                 continue
             _require_successful_session(session, session_id)
+            session_simulation_id = session.get("simulation_id")
+            if not isinstance(session_simulation_id, str) or not session_simulation_id:
+                raise EmbeddingEligibilityError(
+                    f"Simulation session id={session_id} has no parent simulation."
+                )
+            _require_ready_parent_simulation(db, session_simulation_id, session_id)
             decisions = session.get("decisions")
             if not isinstance(decisions, list):
                 summary["malformed"] += 1
