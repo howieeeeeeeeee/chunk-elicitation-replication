@@ -22,6 +22,7 @@ simulations. This repository does not connect to MongoDB.
 - `data/exp*/embeddings.json`: deterministic decision-level reasoning embeddings and attempt history.
 - `data/derived/pca_analyses.json`: shared PCA lifecycle and aligned coordinates for exported embeddings.
 - `data/derived/kmeans_analyses.json`: shared raw/PCA clustering lifecycle and nested per-cluster summary histories.
+- `docs/data-schema.md`: readable schemas and lifecycle examples for all five simulation/derived collections.
 - `tex/tables/` and `tex/figs/`: analysis outputs for paper tables/figures.
 
 ## Setup
@@ -137,6 +138,10 @@ Applied mode runs sequentially and requires confirmation or `--yes`. It reads
 allows one new attempt for a prior failure in a later invocation.
 
 ## Local JSON Contract
+
+See [the complete data-schema guide](docs/data-schema.md) for document examples,
+identity rules, lifecycle transitions, usage/cost fields, and the relationship
+between simulations, sessions, embeddings, PCA, clustering, and summaries.
 
 Each experiment folder stores three collections:
 
