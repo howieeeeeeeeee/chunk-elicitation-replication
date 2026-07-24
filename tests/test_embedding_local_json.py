@@ -17,7 +17,9 @@ from db_ops.embeddings import (
 from embedding.entities import build_embedding_entity, record_embedding_failure
 from embedding.orchestration import (
     EmbeddingEligibilityError,
+    embed_decision_reasoning,
     embed_simulation,
+    embed_simulation_session,
     summarize_embedding_plan,
 )
 
@@ -165,6 +167,21 @@ class LocalJsonEmbeddingTests(unittest.TestCase):
                 embed_simulation(
                     database,
                     "simulation-1",
+                    CONFIG,
+                    request_fn=lambda *_: calls.append(True),
+                )
+            with self.assertRaisesRegex(EmbeddingEligibilityError, "not completed"):
+                embed_simulation_session(
+                    database,
+                    "session-1",
+                    CONFIG,
+                    request_fn=lambda *_: calls.append(True),
+                )
+            with self.assertRaisesRegex(EmbeddingEligibilityError, "not completed"):
+                embed_decision_reasoning(
+                    database,
+                    "session-1",
+                    0,
                     CONFIG,
                     request_fn=lambda *_: calls.append(True),
                 )

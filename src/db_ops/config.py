@@ -22,6 +22,7 @@ def get_database(
     return LocalJsonDatabase(
         root / experiment_name,
         benchmark_dir=root / "benchmark",
+        derived_dir=root / "derived",
     )
 
 
@@ -34,4 +35,5 @@ def get_combined_database(
     return CombinedJsonDatabase(
         [root / name for name in experiment_names],
         benchmark_dir=root / "benchmark",
+        derived_dir=root / "derived",
     )
