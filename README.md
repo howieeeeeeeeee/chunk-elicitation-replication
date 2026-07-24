@@ -75,6 +75,23 @@ uv run python scripts/03_Run_Experiment_2.py --dry-run
 uv run python scripts/04_Run_Experiment_3.py --dry-run
 ```
 
+| Runner | Formal identity | Planned / included |
+| --- | --- | ---: |
+| `02_Run_Experiment_1.py` | `phase_2_context`, empty tag; eight behavioral games, GPT-5.2, Atomic/ChunkN=10, reasoning and prompt treatments | 672 / 672 |
+| `03_Run_Experiment_2.py` | `phase_2`, empty main tag plus `small_experiments_on_removing_reasoning` | 1,320 / 1,319 |
+| `04_Run_Experiment_3.py` | `phase_2`, empty main tag plus `small_experiments_on_temperature` | 165 / 161 |
+
+The main repository runners use the same normalized signatures against
+MongoDB. Historical missing/null defaults and an empty tag normalize safely;
+operational worker count and human-readable simulation names are not identity.
+Unmatched dry-run cells are report-only and must not be retried implicitly.
+
+The one-way export includes only completed records matching these formal
+manifests. `data/export_manifest.json` records included counts and compact
+reasons for excluding legacy or non-formal completed rows. Those exclusions do
+not delete or archive source MongoDB records. `scripts/05_Run_Analysis.py`
+implements the manuscript analysis against this included snapshot.
+
 Then run a script with confirmation skipped:
 
 ```bash

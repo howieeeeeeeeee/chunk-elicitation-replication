@@ -1,26 +1,120 @@
 {
-  "exp1": {
-    "game_count": 8,
-    "phase_names": [
-      "phase_2_context"
-    ],
-    "session_count": 37012,
-    "simulation_count": 672
+  "benchmark_count": 18,
+  "derived": {
+    "generated_at": "2026-07-24T10:07:33.207768Z",
+    "kmeans_analyses": {
+      "clustering_status_counts": {
+        "complete": 0,
+        "failed": 0,
+        "pending": 0
+      },
+      "excluded_count": 0,
+      "exclusions": [],
+      "included_count": 0,
+      "source_count": 0,
+      "summary_cluster_status_counts": {
+        "complete": 0,
+        "failed": 0,
+        "pending": 0
+      },
+      "summary_run_status_counts": {
+        "complete": 0,
+        "failed": 0,
+        "pending": 0
+      }
+    },
+    "pca_analyses": {
+      "excluded_count": 0,
+      "exclusions": [],
+      "included_count": 0,
+      "source_count": 0,
+      "status_counts": {
+        "complete": 0,
+        "failed": 0,
+        "pending": 0
+      }
+    },
+    "schema_version": 4
   },
-  "exp2": {
-    "game_count": 10,
-    "phase_names": [
-      "phase_2"
-    ],
-    "session_count": 27122,
-    "simulation_count": 1391
+  "experiments": {
+    "exp1": {
+      "embedding_config_hashes": [],
+      "embedding_count": 0,
+      "embedding_failure_count": 0,
+      "embedding_success_count": 0,
+      "game_count": 8,
+      "generated_at": "2026-07-24T10:07:33.207768Z",
+      "phase_names": [
+        "phase_2_context"
+      ],
+      "schema_version": 4,
+      "session_count": 37012,
+      "simulation_count": 672
+    },
+    "exp2": {
+      "embedding_config_hashes": [],
+      "embedding_count": 0,
+      "embedding_failure_count": 0,
+      "embedding_success_count": 0,
+      "game_count": 10,
+      "generated_at": "2026-07-24T10:07:33.207768Z",
+      "phase_names": [
+        "phase_2"
+      ],
+      "schema_version": 4,
+      "session_count": 24961,
+      "simulation_count": 1319
+    },
+    "exp3": {
+      "embedding_config_hashes": [],
+      "embedding_count": 0,
+      "embedding_failure_count": 0,
+      "embedding_success_count": 0,
+      "game_count": 5,
+      "generated_at": "2026-07-24T10:07:33.207768Z",
+      "phase_names": [
+        "phase_2"
+      ],
+      "schema_version": 4,
+      "session_count": 9683,
+      "simulation_count": 161
+    }
   },
-  "exp3": {
-    "game_count": 5,
-    "phase_names": [
-      "phase_2"
-    ],
-    "session_count": 12522,
-    "simulation_count": 643
+  "generated_at": "2026-07-24T10:07:33.207768Z",
+  "schema_version": 4,
+  "selection": {
+    "completed_source_count": 3755,
+    "experiments": {
+      "exp1": {
+        "candidate_count": 672,
+        "excluded_count": 0,
+        "excluded_reason_counts": {},
+        "included_count": 672
+      },
+      "exp2": {
+        "candidate_count": 1391,
+        "excluded_count": 72,
+        "excluded_reason_counts": {
+          "model_outside_formal_manifest": 72
+        },
+        "included_count": 1319
+      },
+      "exp3": {
+        "candidate_count": 702,
+        "excluded_count": 541,
+        "excluded_reason_counts": {
+          "configuration_outside_formal_manifest": 450,
+          "extra_flag_outside_formal_manifest": 59,
+          "model_outside_formal_manifest": 32
+        },
+        "included_count": 161
+      }
+    },
+    "formal_manifest_counts": {
+      "exp1": 672,
+      "exp2": 1320,
+      "exp3": 165
+    },
+    "outside_experiment_candidates_count": 990
   }
 }

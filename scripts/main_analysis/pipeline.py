@@ -37,7 +37,7 @@ def run_pipeline() -> None:
     print(f"      phase_2_context sims: {len(sims_p2c)}")
     sims_p2c = attach_ks_test_results_to_simulations_df(
         _db=db, simulations_df=sims_p2c, decision_index=0, alpha=0.05
-    )
+    ).sort_index()
     sims_p2c = sims_p2c[sims_p2c["Extra Flag"].astype(str) == "[]"]
     print(f"      phase_2_context sims (Extra Flag = []): {len(sims_p2c)}")
 
@@ -58,7 +58,7 @@ def run_pipeline() -> None:
     print(f"      phase_2 sims: {len(sims_p2)}")
     sims_p2 = attach_ks_test_results_to_simulations_df(
         _db=db, simulations_df=sims_p2, decision_index=0, alpha=0.05
-    )
+    ).sort_index()
 
     print("[4/7] Writing overall W1 summary (phase_2 behavior)...")
     df_behavior = filter_behavior(sims_p2)

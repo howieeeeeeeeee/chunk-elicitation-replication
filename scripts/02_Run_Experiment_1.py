@@ -8,6 +8,7 @@ context-incentive cells, and three privacy treatments (672 cells).
 from __future__ import annotations
 
 from _common import (
+    FORMAL_SIGNATURE_FIELDS,
     base_arg_parser,
     build_jobs,
     confirm_or_exit,
@@ -72,20 +73,7 @@ TREATMENT_OVERRIDES = [
     for privacy in PRIVACY_TREATMENTS.keys()
 ]
 
-LIST_OF_PARAMETERS = [
-    "instruction_config.explain_reasoning",
-    "instruction_config.explain_reasoning_mode",
-    "instruction_config.split_n",
-    "instruction_config.context",
-    "instruction_config.incentive_size",
-    "instruction_config.privacy_treatment",
-    "instruction_config.theoretical_prediction",
-    "simulation_config.simulation_mode",
-    "simulation_config.batch_simulation_n",
-    "llm_config.reasoning_enabled",
-    "llm_config.model",
-    "simulation_config.game_type",
-]
+LIST_OF_PARAMETERS = list(FORMAL_SIGNATURE_FIELDS)
 
 BASELINE_CONFIG = {
     "simulation_config": {

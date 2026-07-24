@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import argparse
 import copy
+import json
 import logging
 import random
 import sys
@@ -22,6 +23,57 @@ load_dotenv(REPLICATION_ROOT / ".env")
 
 from db_ops.config import get_database
 from simluations.run_simulation import run_simulation_to_json
+
+
+FORMAL_SIGNATURE_FIELDS = (
+    "simulation_config.game_type",
+    "llm_config.model",
+    "simulation_config.simulation_mode",
+    "simulation_config.batch_simulation_n",
+    "simulation_config.target_simulation_n",
+    "instruction_config.explain_reasoning",
+    "instruction_config.explain_reasoning_mode",
+    "instruction_config.split_n",
+    "llm_config.reasoning_enabled",
+    "llm_config.llm_service",
+    "llm_config.temperature",
+    "llm_config.frequency_penalty",
+    "instruction_config.context",
+    "instruction_config.incentive_size",
+    "instruction_config.privacy_treatment",
+    "instruction_config.theoretical_prediction",
+    "instruction_config.focal_point",
+    "simulation_config.batch_mode",
+    "simulation_config.output_format",
+    "simulation_config.previous_responses",
+    "simulation_config.save_messages_n_contents",
+    "instruction_config.background",
+    "instruction_config.personality_traits",
+    "instruction_config.additional_instructions",
+    "instruction_config.include_simulation_id",
+)
+
+HISTORICAL_SIGNATURE_DEFAULTS = {
+    "simulation_config.target_simulation_n": 100,
+    "simulation_config.output_format": "json",
+    "simulation_config.batch_mode": "Independent",
+    "simulation_config.previous_responses": [],
+    "simulation_config.save_messages_n_contents": False,
+    "instruction_config.background": "",
+    "instruction_config.personality_traits": "",
+    "instruction_config.explain_reasoning_mode": "basic",
+    "instruction_config.split_n": None,
+    "instruction_config.theoretical_prediction": False,
+    "instruction_config.additional_instructions": [],
+    "instruction_config.include_simulation_id": True,
+    "instruction_config.context": "Not Specified",
+    "instruction_config.incentive_size": "Not Specified",
+    "instruction_config.privacy_treatment": "Not Specified",
+    "instruction_config.focal_point": False,
+    "llm_config.llm_service": "openrouter",
+    "llm_config.temperature": 1,
+    "llm_config.frequency_penalty": 1,
+}
 
 
 def setup_logger(name: str) -> logging.Logger:
@@ -54,6 +106,40 @@ def get_by_dot_path(d: dict, dot_path: str) -> Any:
             return None
         cur = cur[part]
     return cur
+
+
+def _normalize_signature_value(value: Any) -> Any:
+    if isinstance(value, dict):
+        return {
+            str(key): _normalize_signature_value(value[key])
+            for key in sorted(value, key=str)
+        }
+    if isinstance(value, (list, tuple)):
+        return [_normalize_signature_value(item) for item in value]
+    return value
+
+
+def normalized_simulation_signature(
+    config: dict,
+    *,
+    phase_name: str,
+    extra_flag: Any,
+    fields: Iterable[str] = FORMAL_SIGNATURE_FIELDS,
+) -> dict[str, Any]:
+    signature = {
+        "phase_name": phase_name,
+        "extraFlag": normalize_extra_flag(extra_flag),
+    }
+    for field in fields:
+        value = get_by_dot_path(config, field)
+        if value is None and field in HISTORICAL_SIGNATURE_DEFAULTS:
+            value = copy.deepcopy(HISTORICAL_SIGNATURE_DEFAULTS[field])
+        signature[field] = _normalize_signature_value(value)
+    return signature
+
+
+def simulation_signature_key(signature: dict[str, Any]) -> str:
+    return json.dumps(signature, sort_keys=True, separators=(",", ":"))
 
 
 def apply_overrides(config: dict, overrides: dict) -> None:
@@ -97,15 +183,38 @@ def simulation_exists(
     list_of_parameters: list[str],
     extra_flag: Any,
 ) -> bool:
-    query: dict = {"phase_name": phase_name, "archived": False, "completed": True}
-    for dot_key in list_of_parameters:
-        query[dot_key] = get_by_dot_path(config, dot_key)
     normalized = normalize_extra_flag(extra_flag)
+    signature = normalized_simulation_signature(
+        config,
+        phase_name=phase_name,
+        extra_flag=normalized,
+        fields=list_of_parameters,
+    )
+    query: dict = {
+        "phase_name": phase_name,
+        "archived": False,
+        "completed": True,
+        "simulation_config.game_type": signature["simulation_config.game_type"],
+        "llm_config.model": signature["llm_config.model"],
+    }
     if normalized:
         query["extraFlag"] = normalized
     else:
-        query["$or"] = [{"extraFlag": []}, {"extraFlag": {"$exists": False}}]
-    return db.simulations.find_one(query) is not None
+        query["$or"] = [
+            {"extraFlag": []},
+            {"extraFlag": None},
+            {"extraFlag": {"$exists": False}},
+        ]
+    return any(
+        normalized_simulation_signature(
+            candidate,
+            phase_name=candidate.get("phase_name"),
+            extra_flag=candidate.get("extraFlag"),
+            fields=list_of_parameters,
+        )
+        == signature
+        for candidate in db.simulations.find(query)
+    )
 
 
 def build_jobs(
@@ -166,6 +275,12 @@ def build_jobs(
                                 "phase_name": phase_name,
                                 "config": config,
                                 "extraFlag": extra_flag,
+                                "signature": normalized_simulation_signature(
+                                    config,
+                                    phase_name=phase_name,
+                                    extra_flag=extra_flag,
+                                    fields=list_of_parameters,
+                                ),
                                 "game": game,
                                 "model": model,
                                 "model_type": model_type,

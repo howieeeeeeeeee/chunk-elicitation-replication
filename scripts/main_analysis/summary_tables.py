@@ -410,6 +410,7 @@ def write_ground_truth_error_rates(
         pct = (misaligned / total * 100) if total else 0.0
         records.append(
             {
+                "Simulation ID": str(sim_id),
                 "Game": game,
                 "Mode": row["Mode"],
                 "ChunkN": row["ChunkN"],
@@ -445,7 +446,20 @@ def write_ground_truth_error_rates(
         return df
 
     w1 = pd.to_numeric(df["Wasserstein-1"], errors="coerce").fillna(0)
-    df = df[w1 != 0].sort_values(["Game", "Mode", "LLM Model"]).reset_index(drop=True)
+    df = (
+        df[w1 != 0]
+        .sort_values(
+            [
+                "Game",
+                "Mode",
+                "LLM Model",
+                "Misaligned %",
+                "Wasserstein-1",
+                "Simulation ID",
+            ]
+        )
+        .reset_index(drop=True)
+    )
 
     header = _error_table_header()
     rows: list[list[str]] = []
@@ -461,4 +475,3 @@ def write_ground_truth_error_rates(
         )
     _write_tabular(out_path, header=header, rows=rows, col_spec="lllrr")
     return df
-

@@ -8,6 +8,7 @@ Covers ten behavioral games, eight models, phase_2, Atomic and ChunkN
 from __future__ import annotations
 
 from _common import (
+    FORMAL_SIGNATURE_FIELDS,
     base_arg_parser,
     build_jobs,
     confirm_or_exit,
@@ -73,16 +74,7 @@ REASONING_OFF_PARAMETER_COMBINATIONS = {
     "without_thinking": make_combos(REASONING_OFF_COMBOS, reasoning_values=[False]),
 }
 
-LIST_OF_PARAMETERS = [
-    "instruction_config.explain_reasoning",
-    "instruction_config.explain_reasoning_mode",
-    "instruction_config.split_n",
-    "simulation_config.simulation_mode",
-    "simulation_config.batch_simulation_n",
-    "llm_config.reasoning_enabled",
-    "llm_config.model",
-    "simulation_config.game_type",
-]
+LIST_OF_PARAMETERS = list(FORMAL_SIGNATURE_FIELDS)
 
 BASELINE_CONFIG = {
     "simulation_config": {

@@ -1,0 +1,36 @@
+{
+  "generated_at": "2026-07-24T10:07:33.207768Z",
+  "kmeans_analyses": {
+    "clustering_status_counts": {
+      "complete": 0,
+      "failed": 0,
+      "pending": 0
+    },
+    "excluded_count": 0,
+    "exclusions": [],
+    "included_count": 0,
+    "source_count": 0,
+    "summary_cluster_status_counts": {
+      "complete": 0,
+      "failed": 0,
+      "pending": 0
+    },
+    "summary_run_status_counts": {
+      "complete": 0,
+      "failed": 0,
+      "pending": 0
+    }
+  },
+  "pca_analyses": {
+    "excluded_count": 0,
+    "exclusions": [],
+    "included_count": 0,
+    "source_count": 0,
+    "status_counts": {
+      "complete": 0,
+      "failed": 0,
+      "pending": 0
+    }
+  },
+  "schema_version": 4
+}

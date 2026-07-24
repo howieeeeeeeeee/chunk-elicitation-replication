@@ -8,6 +8,7 @@ small_experiments_on_temperature (165 cells).
 from __future__ import annotations
 
 from _common import (
+    FORMAL_SIGNATURE_FIELDS,
     base_arg_parser,
     build_jobs,
     confirm_or_exit,
@@ -66,17 +67,7 @@ TEMP_PARAMETER_COMBINATIONS = {
     "without_thinking": make_combos(TEMP_ROBUSTNESS_COMBOS, reasoning_values=[False]),
 }
 
-LIST_OF_PARAMETERS = [
-    "instruction_config.explain_reasoning",
-    "instruction_config.explain_reasoning_mode",
-    "instruction_config.split_n",
-    "simulation_config.simulation_mode",
-    "simulation_config.batch_simulation_n",
-    "llm_config.reasoning_enabled",
-    "llm_config.temperature",
-    "llm_config.model",
-    "simulation_config.game_type",
-]
+LIST_OF_PARAMETERS = list(FORMAL_SIGNATURE_FIELDS)
 
 BASELINE_CONFIG = {
     "simulation_config": {

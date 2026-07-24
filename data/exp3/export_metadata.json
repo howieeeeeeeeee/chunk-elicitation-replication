@@ -1,8 +1,14 @@
 {
+  "embedding_config_hashes": [],
+  "embedding_count": 0,
+  "embedding_failure_count": 0,
+  "embedding_success_count": 0,
   "game_count": 5,
+  "generated_at": "2026-07-24T10:07:33.207768Z",
   "phase_names": [
     "phase_2"
   ],
-  "session_count": 12522,
-  "simulation_count": 643
+  "schema_version": 4,
+  "session_count": 9683,
+  "simulation_count": 161
 }
