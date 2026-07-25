@@ -174,6 +174,10 @@ set may span `exp1`, `exp2`, and `exp3`:
   attempts, and aligned coordinates.
 - `data/derived/kmeans_analyses.json` stores clustering over raw embeddings or
   one completed PCA entity plus independently resumable per-cluster summaries.
+  Schema version 2 persists every exact summary prompt, its SHA-256 digest over
+  the exact UTF-8 bytes, append-only retry usage/cost, and explicit reuse
+  provenance. Version-1 records upgrade before mutation and remain ineligible
+  for exact reuse because their prompts were not retained.
 
 Both experiment-local and combined database handles expose these two shared
 collections through `src/db_ops/`; they are never duplicated into experiment
@@ -187,6 +191,13 @@ embedding records may therefore be intentionally replaced. The same rule
 applies to managed files under `data/derived/`. A PCA record is exported only
 when all referenced embeddings exist in the public snapshot; a PCA-derived
 k-means record also requires its referenced PCA entity.
+
+Export schema version 5 validates derived contracts and rejects credential,
+request-header, raw-response, and model-reasoning fields before serialization.
+Derived manifests include collection SHA-256 digests, entity schema counts,
+summary-attempt states, exact-prompt counts/UTF-8 bytes, and reuse counts. The
+contract and fixture support do not publish pilot records; `data/derived/`
+changes only after a separately authorized one-way export.
 
 The simulation record keeps references to session IDs:
 

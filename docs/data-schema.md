@@ -427,7 +427,7 @@ the same `embedding_ids`. PCA component selection belongs in
 ```json
 {
   "_id": "kmeans-analysis:<sha256>",
-  "schema_version": 1,
+  "schema_version": 2,
   "embedding_ids": [
     "reasoning-embedding:aaa",
     "reasoning-embedding:bbb"
@@ -493,7 +493,7 @@ the same `embedding_ids`. PCA component selection belongs in
       "summary_config": {
         "model": "openai/gpt-5-mini",
         "reasoning": {
-          "effort": "low"
+          "effort": "high"
         },
         "provider": {
           "order": ["openai"]
@@ -509,7 +509,10 @@ the same `embedding_ids`. PCA component selection belongs in
           "cluster_id": 0,
           "status": "complete",
           "input_hash": "<sha256>",
+          "prompt": "Exact UTF-8 prompt supplied to the summary model.",
           "prompt_hash": "<sha256>",
+          "exact_prompt_verified": true,
+          "reuse": null,
           "output": {
             "summary": "Decisions in this cluster emphasize fairness.",
             "response_id": "generation-123",
@@ -534,6 +537,10 @@ the same `embedding_ids`. PCA component selection belongs in
               "started_at": "2026-07-23T10:21:00Z",
               "finished_at": "2026-07-23T10:21:03Z",
               "success": true,
+              "input_hash": "<sha256>",
+              "prompt": "Exact UTF-8 prompt supplied to the summary model.",
+              "prompt_hash": "<sha256>",
+              "exact_prompt_verified": true,
               "response_id": "generation-123",
               "resolved_model": "openai/gpt-5-mini",
               "finish_reason": "stop",
@@ -557,7 +564,10 @@ the same `embedding_ids`. PCA component selection belongs in
           "cluster_id": 1,
           "status": "complete",
           "input_hash": "<sha256>",
+          "prompt": "Another exact UTF-8 summary prompt.",
           "prompt_hash": "<sha256>",
+          "exact_prompt_verified": true,
+          "reuse": null,
           "output": {
             "summary": "Decisions in this cluster emphasize self-interest.",
             "response_id": "generation-124",
@@ -579,6 +589,10 @@ the same `embedding_ids`. PCA component selection belongs in
               "started_at": "2026-07-23T10:22:00Z",
               "finished_at": "2026-07-23T10:22:03Z",
               "success": true,
+              "input_hash": "<sha256>",
+              "prompt": "Another exact UTF-8 summary prompt.",
+              "prompt_hash": "<sha256>",
+              "exact_prompt_verified": true,
               "response_id": "generation-124",
               "resolved_model": "openai/gpt-5-mini",
               "finish_reason": "stop",
@@ -618,15 +632,39 @@ Clustering output rules:
 Summary rules:
 
 - Multiple `summary_config_hash` entries can reuse one clustering result.
+- Schema version 2 stores each attempted prompt exactly and defines
+  `prompt_hash` as SHA-256 of the prompt's exact UTF-8 bytes.
 - Every cluster has independent `pending | complete | failed` state and
   append-only attempts.
-- A later analysis run can skip completed clusters and retry only failed or
-  missing clusters.
+- Exact reuse requires a completed provider result with both the same
+  `summary_config_hash` and a byte-identical verified prompt. A reuse target
+  stores the final summary plus a deterministic source reference, not a second
+  copy of provider response metadata or usage.
+- A later analysis run can skip completed exact requests and retry failed or
+  missing requests. A changed prompt is a distinct request; prior attempts,
+  usage, and cost remain append-only.
 - Successful summary attempts retain the complete returned usage object.
   Missing cost becomes `null`; it is not estimated later.
-- Only the final summary and provenance hashes are stored. Full prompts,
-  duplicated session reasoning text, raw responses, credentials, and model
-  reasoning traces are excluded.
+- Version-1 records remain valid. On first mutation they upgrade to version 2
+  without losing attempts, but their missing prompts remain
+  `exact_prompt_verified: false`; they cannot satisfy an exact reuse lookup.
+- Exact prompts are intentionally stored for provenance. Raw provider
+  responses, credentials, provider secrets, and model reasoning traces remain
+  excluded.
+
+A reused cluster has no provider attempt and replaces `reuse: null` with:
+
+```json
+{
+  "source_analysis_id": "kmeans-analysis:<sha256>",
+  "source_summary_config_hash": "<sha256>",
+  "source_cluster_id": 0,
+  "reused_at": "2026-07-23T10:23:00Z"
+}
+```
+
+Its output contains only `summary`, the target `input_hash`, and the verified
+target `prompt_hash`; response metadata and usage remain on the provider source.
 
 ## Lifecycle states
 
@@ -649,9 +687,16 @@ The canonical exporter writes an exact one-way public snapshot:
 - PCA records are exported only if every referenced embedding is exported;
 - PCA-derived k-means records additionally require the referenced PCA record;
 - pending, failed, and complete derived records are retained for audit;
+- derived records are contract-validated before serialization and rejected if
+  they contain credential, request-header, raw-response, or model-reasoning
+  fields;
 - managed JSON files are atomically replaced, so stale or replication-local
   records can be removed by a later canonical export;
-- collection files are written before derived and top-level manifests.
+- collection files are written before derived and top-level manifests;
+- export schema version 5 records collection SHA-256 digests, entity schema
+  counts, summary-attempt states, exact-prompt counts/UTF-8 bytes, and reuse
+  counts so a fixture or later public snapshot can be reconciled without
+  provider calls.
 
 ## Privacy and secrets
 
@@ -660,8 +705,13 @@ The canonical exporter writes an exact one-way public snapshot:
 - Embeddings intentionally retain their exact `input_text` for provenance.
 - Simulation sessions retain decisions, reasoning text, and provider result
   metadata because they are the source experiment record.
-- K-means summaries retain only the final summary plus `input_hash` and
-  `prompt_hash`; they do not duplicate source reasoning text or full prompts.
+- Main-repository K-means schema version 2 intentionally retains exact
+  cluster-summary prompts. Callers must ensure they contain only the approved
+  game context and source reasoning, never credentials, hidden model
+  reasoning, or raw provider responses.
+- The local-JSON replication contract uses the same version-2 prompt,
+  migration, validation, and lifecycle rules. Publishing pilot records remains
+  a separate, explicit export action.
 - Logs and sanitized failure objects must not contain keys, vectors, full
   prompts, raw responses, or complete reasoning text.
 
@@ -674,7 +724,8 @@ The canonical exporter writes an exact one-way public snapshot:
 - Shared PCA identity and validation:
   `src/derived_analysis/pca.py`
 - Shared k-means and summary identity and validation:
-  `src/derived_analysis/kmeans.py` and
+  `src/derived_analysis/kmeans.py`,
+  `src/derived_analysis/kmeans_summaries.py`, and
   `src/derived_analysis/kmeans_outputs.py`
 - Canonical MongoDB persistence:
   `src/db_ops/`

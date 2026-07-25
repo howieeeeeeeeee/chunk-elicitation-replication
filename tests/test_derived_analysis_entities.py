@@ -21,7 +21,9 @@ from derived_analysis.kmeans import (
     record_cluster_summary_started,
     record_clustering_completed,
     record_clustering_started,
+    rendered_prompt_hash,
     summary_config_hash,
+    upgrade_kmeans_analysis,
     validate_kmeans_analysis,
 )
 from derived_analysis.pca import (
@@ -260,7 +262,7 @@ class DerivedAnalysisEntityTests(unittest.TestCase):
             summary_hash,
             0,
             input_hash="input-hash-0",
-            prompt_hash="prompt-hash-0",
+            prompt="Exact prompt zero",
             timestamp=RETRIED,
         )
         entity = record_cluster_summary_completed(
@@ -276,7 +278,7 @@ class DerivedAnalysisEntityTests(unittest.TestCase):
                 summary_hash,
                 0,
                 input_hash="input-hash-0",
-                prompt_hash="prompt-hash-0",
+                prompt="Exact prompt zero",
             )
 
         entity = record_cluster_summary_started(
@@ -284,7 +286,7 @@ class DerivedAnalysisEntityTests(unittest.TestCase):
             summary_hash,
             1,
             input_hash="input-hash-1",
-            prompt_hash="prompt-hash-1",
+            prompt="Exact prompt one",
         )
         failed = record_cluster_summary_failed(
             entity, summary_hash, 1, SummaryFailure("private content")
@@ -302,13 +304,17 @@ class DerivedAnalysisEntityTests(unittest.TestCase):
             summary_hash,
             1,
             input_hash="input-hash-1",
-            prompt_hash="prompt-hash-1",
+            prompt="Exact prompt one",
         )
         completed = record_cluster_summary_completed(
             retried, summary_hash, 1, summary_response(1)
         )
         self.assertEqual("complete", completed["summaries"][0]["status"])
         self.assertEqual(2, completed["summaries"][0]["clusters"][1]["attempt_count"])
+        self.assertEqual(
+            rendered_prompt_hash("Exact prompt one"),
+            completed["summaries"][0]["clusters"][1]["prompt_hash"],
+        )
         self.assertEqual(
             0.005,
             completed["summaries"][0]["clusters"][1]["attempts"][0]["usage"][
@@ -333,7 +339,7 @@ class DerivedAnalysisEntityTests(unittest.TestCase):
             summary_hash,
             0,
             input_hash="input-hash-0",
-            prompt_hash="prompt-hash-0",
+            prompt="Exact prompt zero",
             timestamp=RETRIED,
         )
         response = summary_response(0)
@@ -348,6 +354,109 @@ class DerivedAnalysisEntityTests(unittest.TestCase):
         self.assertIsNone(
             completed["summaries"][0]["clusters"][0]["output"]["usage"]["cost"]
         )
+
+    def test_changed_prompt_is_distinct_and_failed_history_is_preserved(self):
+        entity = add_summary_run(
+            completed_clustering(), SUMMARY_CONFIG, timestamp=FINISHED
+        )
+        summary_hash = summary_config_hash(SUMMARY_CONFIG)
+        first = record_cluster_summary_started(
+            entity,
+            summary_hash,
+            0,
+            input_hash="input-hash-0",
+            prompt="First exact prompt",
+            timestamp=RETRIED,
+        )
+        failed = record_cluster_summary_failed(
+            first,
+            summary_hash,
+            0,
+            SummaryFailure("private content"),
+            timestamp=RETRY_FINISHED,
+        )
+        retried = record_cluster_summary_started(
+            failed,
+            summary_hash,
+            0,
+            input_hash="input-hash-0-revised",
+            prompt="Second exact prompt",
+        )
+        cluster = retried["summaries"][0]["clusters"][0]
+        self.assertEqual(2, cluster["attempt_count"])
+        self.assertEqual("First exact prompt", cluster["attempts"][0]["prompt"])
+        self.assertEqual("Second exact prompt", cluster["attempts"][1]["prompt"])
+        self.assertNotEqual(
+            cluster["attempts"][0]["prompt_hash"],
+            cluster["attempts"][1]["prompt_hash"],
+        )
+        self.assertEqual(
+            0.005,
+            cluster["attempts"][0]["usage"]["cost"],
+        )
+
+    def test_legacy_summary_is_readable_but_not_exact_prompt_verified(self):
+        entity = add_summary_run(
+            completed_clustering(), SUMMARY_CONFIG, timestamp=FINISHED
+        )
+        summary_hash = summary_config_hash(SUMMARY_CONFIG)
+        entity = record_cluster_summary_started(
+            entity,
+            summary_hash,
+            0,
+            input_hash="legacy-input",
+            prompt="Prompt absent from legacy storage",
+            timestamp=RETRIED,
+        )
+        entity = record_cluster_summary_completed(
+            entity,
+            summary_hash,
+            0,
+            summary_response(0),
+            timestamp=RETRY_FINISHED,
+        )
+        legacy = copy.deepcopy(entity)
+        legacy["schema_version"] = 1
+        for summary_run in legacy["summaries"]:
+            for cluster in summary_run["clusters"]:
+                cluster.pop("prompt")
+                cluster.pop("exact_prompt_verified")
+                cluster.pop("reuse")
+                for attempt in cluster["attempts"]:
+                    attempt.pop("input_hash")
+                    attempt.pop("prompt")
+                    attempt.pop("prompt_hash")
+                    attempt.pop("exact_prompt_verified")
+
+        validate_kmeans_analysis(legacy)
+        upgraded = upgrade_kmeans_analysis(legacy)
+        upgraded_cluster = upgraded["summaries"][0]["clusters"][0]
+        self.assertEqual(2, upgraded["schema_version"])
+        self.assertIsNone(upgraded_cluster["prompt"])
+        self.assertFalse(upgraded_cluster["exact_prompt_verified"])
+        self.assertEqual(1, upgraded_cluster["attempt_count"])
+        self.assertEqual(
+            0.02,
+            upgraded_cluster["attempts"][0]["usage"]["cost"],
+        )
+
+    def test_validation_rejects_prompt_hash_not_matching_exact_bytes(self):
+        entity = add_summary_run(
+            completed_clustering(), SUMMARY_CONFIG, timestamp=FINISHED
+        )
+        summary_hash = summary_config_hash(SUMMARY_CONFIG)
+        entity = record_cluster_summary_started(
+            entity,
+            summary_hash,
+            0,
+            input_hash="input-hash",
+            prompt="Exact UTF-8 prompt: 合作",
+            timestamp=RETRIED,
+        )
+        tampered = copy.deepcopy(entity)
+        tampered["summaries"][0]["clusters"][0]["prompt_hash"] = "wrong"
+        with self.assertRaisesRegex(ValueError, "exact UTF-8 bytes"):
+            validate_kmeans_analysis(tampered)
 
     def test_validation_rejects_tampered_derived_entities(self):
         pca_entity = completed_pca()

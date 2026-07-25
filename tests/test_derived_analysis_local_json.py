@@ -16,8 +16,10 @@ from db_ops.kmeans_analyses import (
     complete_clustering_attempt,
     fail_cluster_summary_attempt,
     find_completed_cluster_summary,
+    find_completed_exact_cluster_summary,
     find_completed_clustering,
     register_summary_run,
+    reuse_completed_cluster_summary,
     start_cluster_summary_attempt,
     start_clustering_attempt,
     upsert_kmeans_analysis,
@@ -31,6 +33,7 @@ from db_ops.pca_analyses import (
 )
 from derived_analysis.kmeans import (
     build_kmeans_analysis,
+    rendered_prompt_hash,
     summary_config_hash,
 )
 from derived_analysis.pca import build_pca_analysis
@@ -90,6 +93,15 @@ def summary_response():
             "total_tokens": 8,
             "cost": 0.01,
         },
+    }
+
+
+class SummaryFailure(RuntimeError):
+    usage = {
+        "prompt_tokens": 5,
+        "completion_tokens": 0,
+        "total_tokens": 5,
+        "cost": 0.004,
     }
 
 
@@ -167,7 +179,7 @@ class DerivedAnalysisLocalJsonTests(unittest.TestCase):
                 summary_hash,
                 0,
                 input_hash="input-hash",
-                prompt_hash="prompt-hash",
+                prompt="Exact UTF-8 prompt: 合作",
                 timestamp=LATER,
             )
             complete_cluster_summary_attempt(
@@ -182,6 +194,12 @@ class DerivedAnalysisLocalJsonTests(unittest.TestCase):
                 database, kmeans["_id"], summary_hash, 0
             )
             self.assertEqual("complete", saved["status"])
+            self.assertEqual("Exact UTF-8 prompt: 合作", saved["prompt"])
+            self.assertEqual(
+                rendered_prompt_hash("Exact UTF-8 prompt: 合作"),
+                saved["prompt_hash"],
+            )
+            self.assertTrue(saved["exact_prompt_verified"])
             self.assertEqual(0.01, saved["output"]["usage"]["cost"])
             self.assertEqual(
                 1,
@@ -195,7 +213,7 @@ class DerivedAnalysisLocalJsonTests(unittest.TestCase):
             )
             self.assertEqual([], list(data_root.rglob("*.tmp")))
 
-    def test_summary_provenance_cannot_be_rewritten(self):
+    def test_exact_reuse_requires_matching_config_and_prompt(self):
         with tempfile.TemporaryDirectory() as temporary:
             data_root = Path(temporary) / "data"
             database = get_database(data_root=data_root, experiment_name="exp1")
@@ -220,21 +238,155 @@ class DerivedAnalysisLocalJsonTests(unittest.TestCase):
                 summary_hash,
                 0,
                 input_hash="input-hash",
-                prompt_hash="prompt-hash",
+                prompt="Reusable exact prompt",
                 timestamp=LATER,
             )
-            kmeans = fail_cluster_summary_attempt(
+            complete_cluster_summary_attempt(
                 database,
                 kmeans["_id"],
                 summary_hash,
                 0,
-                RuntimeError("private failure"),
+                summary_response(),
                 timestamp=LATER,
             )
-            tampered = copy.deepcopy(kmeans)
-            tampered["summaries"][0]["clusters"][0]["prompt_hash"] = "other"
-            with self.assertRaisesRegex(ValueError, "provenance"):
-                upsert_kmeans_analysis(database, tampered)
+            source = find_completed_exact_cluster_summary(
+                database,
+                summary_hash,
+                "Reusable exact prompt",
+            )
+            self.assertEqual(0, source["cluster_id"])
+            self.assertIsNone(
+                find_completed_exact_cluster_summary(
+                    database,
+                    summary_hash,
+                    "Changed exact prompt",
+                )
+            )
+            self.assertIsNone(
+                find_completed_exact_cluster_summary(
+                    database,
+                    "different-summary-config-hash",
+                    "Reusable exact prompt",
+                )
+            )
+
+            reused = reuse_completed_cluster_summary(
+                database,
+                kmeans["_id"],
+                summary_hash,
+                1,
+                input_hash="reused-input-hash",
+                prompt="Reusable exact prompt",
+                timestamp=LATER,
+            )
+            reused_cluster = reused["summaries"][0]["clusters"][1]
+            self.assertEqual("complete", reused_cluster["status"])
+            self.assertEqual(0, reused_cluster["attempt_count"])
+            self.assertEqual([], reused_cluster["attempts"])
+            self.assertEqual(0, reused_cluster["reuse"]["source_cluster_id"])
+            self.assertNotIn("usage", reused_cluster["output"])
+
+    def test_failed_attempt_history_and_legacy_migration_are_persisted(self):
+        with tempfile.TemporaryDirectory() as temporary:
+            data_root = Path(temporary) / "data"
+            database = get_database(data_root=data_root, experiment_name="exp1")
+            kmeans = build_kmeans_analysis(
+                IDS,
+                {"kind": "embeddings"},
+                CLUSTER_CONFIG,
+                timestamp=FIXED,
+            )
+            upsert_kmeans_analysis(database, kmeans)
+            start_clustering_attempt(database, kmeans["_id"], timestamp=FIXED)
+            complete_clustering_attempt(
+                database, kmeans["_id"], clustering_output(), timestamp=LATER
+            )
+            register_summary_run(
+                database, kmeans["_id"], SUMMARY_CONFIG, timestamp=LATER
+            )
+            summary_hash = summary_config_hash(SUMMARY_CONFIG)
+            start_cluster_summary_attempt(
+                database,
+                kmeans["_id"],
+                summary_hash,
+                0,
+                input_hash="first-input",
+                prompt="First exact prompt",
+                timestamp=LATER,
+            )
+            fail_cluster_summary_attempt(
+                database,
+                kmeans["_id"],
+                summary_hash,
+                0,
+                SummaryFailure("private failure"),
+                timestamp=LATER,
+            )
+            start_cluster_summary_attempt(
+                database,
+                kmeans["_id"],
+                summary_hash,
+                0,
+                input_hash="second-input",
+                prompt="Second exact prompt",
+                timestamp=LATER,
+            )
+            completed = complete_cluster_summary_attempt(
+                database,
+                kmeans["_id"],
+                summary_hash,
+                0,
+                summary_response(),
+                timestamp=LATER,
+            )
+            cluster = completed["summaries"][0]["clusters"][0]
+            self.assertEqual(2, cluster["attempt_count"])
+            self.assertEqual("First exact prompt", cluster["attempts"][0]["prompt"])
+            self.assertEqual(0.004, cluster["attempts"][0]["usage"]["cost"])
+            self.assertEqual("Second exact prompt", cluster["attempts"][1]["prompt"])
+
+            legacy = copy.deepcopy(completed)
+            legacy["schema_version"] = 1
+            for summary_run in legacy["summaries"]:
+                for summary_cluster in summary_run["clusters"]:
+                    summary_cluster.pop("prompt")
+                    summary_cluster.pop("exact_prompt_verified")
+                    summary_cluster.pop("reuse")
+                    for attempt in summary_cluster["attempts"]:
+                        attempt.pop("input_hash")
+                        attempt.pop("prompt")
+                        attempt.pop("prompt_hash")
+                        attempt.pop("exact_prompt_verified")
+            database.kmeans_analyses.replace_all([legacy])
+
+            migrated = register_summary_run(
+                database,
+                kmeans["_id"],
+                SUMMARY_CONFIG,
+                timestamp=LATER,
+            )
+            migrated_cluster = migrated["summaries"][0]["clusters"][0]
+            self.assertEqual(2, migrated["schema_version"])
+            self.assertIsNone(migrated_cluster["prompt"])
+            self.assertFalse(migrated_cluster["exact_prompt_verified"])
+            self.assertEqual(2, migrated_cluster["attempt_count"])
+            self.assertEqual(
+                0.004,
+                migrated_cluster["attempts"][0]["usage"]["cost"],
+            )
+            self.assertIsNone(
+                find_completed_exact_cluster_summary(
+                    database,
+                    summary_hash,
+                    "Second exact prompt",
+                )
+            )
+            self.assertEqual(
+                [migrated],
+                json.loads(
+                    (data_root / "derived/kmeans_analyses.json").read_text()
+                ),
+            )
 
 
 if __name__ == "__main__":
