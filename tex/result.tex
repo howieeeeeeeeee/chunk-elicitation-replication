@@ -144,4 +144,41 @@
 \label{fig:mech-cumulative-answer}
 \end{figure}
 
+\section{Reasoning-content Analysis}
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=\textwidth]{reasoning_cosine_density.png}
+\caption{Within-simulation cosine-similarity densities for Dictator and Prisoner's Dilemma. Each curve contains 4,950 unique pairs from one 100-reasoning simulation.}
+\label{fig:reasoning-cosine-density}
+\end{figure}
+
+\begin{table}[H]
+\centering
+\caption{Paired within-simulation cosine-similarity results. Difference is the atomic mean minus the \texttt{ChunkN} $=10$ mean.}
+\label{tab:reasoning-cosine}
+\input{tables/reasoning_cosine}
+\end{table}
+
+\begin{table}[H]
+\centering
+\caption{K-means selection diagnostics for $K=2$ through $K=10$.}
+\label{tab:reasoning-k-selection}
+\input{tables/reasoning_k_selection}
+\end{table}
+
+\begin{table}[H]
+\centering
+\caption{Selected $K=2$ cluster composition by model and elicitation mode.}
+\label{tab:reasoning-k2-composition}
+\input{tables/reasoning_k2_composition}
+\end{table}
+
+\begin{table}[H]
+\centering
+\caption{Claude Sonnet 5 summaries of the selected $K=2$ clusters.}
+\label{tab:reasoning-k2-summary}
+\input{tables/reasoning_k2_summary}
+\end{table}
+
 \end{document}

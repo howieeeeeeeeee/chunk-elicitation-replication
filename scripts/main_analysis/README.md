@@ -14,6 +14,7 @@ The command delegates to `main_analysis/pipeline.py`, which owns the full run or
 4. Write behavioral W1, reasoning, ground-truth, and random-number summary tables under `tex/tables/`.
 5. Generate paper figures, first under `output/figures/`, then mirror them to `tex/figs/`.
 6. Generate the five HD-0001 within-response mechanism artifacts directly under `tex/tables/` and `tex/figs/`.
+7. Validate the exact HD-0002 corpus and persisted derived entities, then generate the five HD-0003 reasoning artifacts without embedding or summary API calls.
 
 `tex/result.tex` is static. The pipeline does not rewrite it. When adding a new analysis output, generate the table under `tex/tables/` or the figure under `tex/figs/`, then manually add the corresponding `\input{...}` or `\includegraphics{...}` block to `tex/result.tex`.
 
@@ -27,4 +28,5 @@ The command delegates to `main_analysis/pipeline.py`, which owns the full run or
 - `summary_tables.py`: phase_2 summary table generation.
 - `figures.py`: phase_2 figure generation and mirroring to `tex/figs/`.
 - `mechanism.py`: the selected first-answer, answer-position, and cumulative first-k mechanism outputs. The permutation, chunk-call correlation, marginal-return, and `ChunkN=20` diagnostics are not part of the replication pipeline.
+- `reasoning.py`: the selected within-simulation cosine, PCA/K-means diagnostic, K=2 composition, and LLM-powered summary outputs. The K=3 through K=5 details, PC1-PC2 figures, full PCA tables, frequent terms, and cluster-colored projections remain outside the canonical replication analysis.
 - `pipeline.py`: complete orchestration layer used by the compatibility entrypoint.

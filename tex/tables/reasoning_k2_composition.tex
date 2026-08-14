@@ -1,0 +1,31 @@
+\begin{center}
+\normalsize
+\setlength{\tabcolsep}{3pt}
+\textit{Panel A: Dictator}\\[2pt]
+\begin{tabular*}{\textwidth}{@{\extracolsep{\fill}}llrrr@{}}
+\toprule
+Model & Mode & C0 & C1 & Total \\
+\midrule
+DeepSeek V3 & Atomic & 97 & 3 & 100 \\
+DeepSeek V3 & ChunkN=10 & 85 & 15 & 100 \\
+Gemini 3.1 Pro & Atomic & 32 & 68 & 100 \\
+Gemini 3.1 Pro & ChunkN=10 & 81 & 19 & 100 \\
+GPT-5.2 & Atomic & 100 & 0 & 100 \\
+GPT-5.2 & ChunkN=10 & 92 & 8 & 100 \\
+\bottomrule
+\end{tabular*}
+\par\medskip
+\textit{Panel B: Prisoner's Dilemma}\\[2pt]
+\begin{tabular*}{\textwidth}{@{\extracolsep{\fill}}llrrr@{}}
+\toprule
+Model & Mode & C0 & C1 & Total \\
+\midrule
+DeepSeek V3 & Atomic & 33 & 67 & 100 \\
+DeepSeek V3 & ChunkN=10 & 50 & 50 & 100 \\
+Gemini 3.1 Pro & Atomic & 0 & 100 & 100 \\
+Gemini 3.1 Pro & ChunkN=10 & 38 & 62 & 100 \\
+GPT-5.2 & Atomic & 0 & 100 & 100 \\
+GPT-5.2 & ChunkN=10 & 32 & 68 & 100 \\
+\bottomrule
+\end{tabular*}
+\end{center}

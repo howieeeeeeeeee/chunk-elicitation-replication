@@ -6,7 +6,15 @@ __pycache__/
 AGENTS.md
 CLAUDE.md
 output/
+!output/
+output/*
+!output/main_analysis/
+output/main_analysis/*
+!output/main_analysis/reasoning_analysis_results.json
 tex/*.aux
 tex/*.log
 tex/*.out
 tex/*.pdf
+
+.pytest_cache/
+.ruff_cache/

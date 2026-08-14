@@ -1,0 +1,608 @@
+{
+  "decision": "HD-0003",
+  "embedding_config": {
+    "encoding_format": "float",
+    "model": "qwen/qwen3-embedding-8b",
+    "provider": {
+      "allow_fallbacks": false,
+      "data_collection": "deny",
+      "only": [
+        "deepinfra"
+      ]
+    }
+  },
+  "embedding_dimension": 4096,
+  "games": {
+    "Dictator": {
+      "kmeans_analysis_id": "kmeans-analysis:07d8cf6bc80433030c58914ac463c6e67e919f303c2733ba96ba4084c3d59424",
+      "pca_analysis_id": "pca-analysis:b0f0f53ae4ad7d0409ecd82a3fc280099443537cd0b33a90474f428d2048552f",
+      "retained_components": 103,
+      "selected_k": 2
+    },
+    "Prisoner's Dilemma": {
+      "kmeans_analysis_id": "kmeans-analysis:932ac90e978f6bd9d432a5da6bf0ae16d7cb7e0f3b86dfd1b0478fc0919997b5",
+      "pca_analysis_id": "pca-analysis:ac95d7a07150735fd617e88ee20921f69317a59d81fc34d9ee8d12db3ee7c922",
+      "retained_components": 103,
+      "selected_k": 2
+    }
+  },
+  "kmeans_config": {
+    "algorithm": "lloyd",
+    "candidate_k": [
+      2,
+      3,
+      4,
+      5,
+      6,
+      7,
+      8,
+      9,
+      10
+    ],
+    "init": "k-means++",
+    "max_iter": 500,
+    "n_init": 50,
+    "random_state": 20260725,
+    "selection": {
+      "metric": "silhouette",
+      "tie_break": "smallest_k",
+      "within_maximum_tolerance": 0.01
+    },
+    "tol": 0.0001
+  },
+  "observation_count": 1200,
+  "pca_config": {
+    "fit_scope": "within_game",
+    "implementation": "sklearn.decomposition.PCA",
+    "n_components": {
+      "strategy": "minimum_cumulative_explained_variance",
+      "threshold": 0.9
+    },
+    "preprocessing": {
+      "feature_standardize": false,
+      "mean_center": true,
+      "row_l2_normalize": true
+    },
+    "svd_solver": "full",
+    "whiten": false
+  },
+  "simulation_count": 12,
+  "simulation_specs": [
+    {
+      "chunk_n": 1,
+      "expected_failed_sessions": 1,
+      "expected_sessions": 100,
+      "game": "Dictator",
+      "mode": "Atomic",
+      "model_id": "deepseek/deepseek-v3.2",
+      "model_label": "DeepSeek V3 thinking",
+      "simulation_id": "a43fb348-4da5-42c8-b5a2-cec5fdab892f"
+    },
+    {
+      "chunk_n": 10,
+      "expected_failed_sessions": 0,
+      "expected_sessions": 10,
+      "game": "Dictator",
+      "mode": "ChunkN=10",
+      "model_id": "deepseek/deepseek-v3.2",
+      "model_label": "DeepSeek V3 thinking",
+      "simulation_id": "6e9fd4fb-e60d-4070-ac68-0b21f65ef458"
+    },
+    {
+      "chunk_n": 1,
+      "expected_failed_sessions": 0,
+      "expected_sessions": 100,
+      "game": "Dictator",
+      "mode": "Atomic",
+      "model_id": "google/gemini-3.1-pro-preview",
+      "model_label": "Gemini 3.1 Pro thinking",
+      "simulation_id": "0dbbca0f-deec-4786-96c2-172e4e89c4aa"
+    },
+    {
+      "chunk_n": 10,
+      "expected_failed_sessions": 0,
+      "expected_sessions": 10,
+      "game": "Dictator",
+      "mode": "ChunkN=10",
+      "model_id": "google/gemini-3.1-pro-preview",
+      "model_label": "Gemini 3.1 Pro thinking",
+      "simulation_id": "f40ec6c9-f5a0-4d7b-9428-4925779ad075"
+    },
+    {
+      "chunk_n": 1,
+      "expected_failed_sessions": 0,
+      "expected_sessions": 100,
+      "game": "Dictator",
+      "mode": "Atomic",
+      "model_id": "openai/gpt-5.2",
+      "model_label": "GPT-5.2 thinking",
+      "simulation_id": "0f5891ab-d243-4436-8a14-9883cae2071e"
+    },
+    {
+      "chunk_n": 10,
+      "expected_failed_sessions": 0,
+      "expected_sessions": 10,
+      "game": "Dictator",
+      "mode": "ChunkN=10",
+      "model_id": "openai/gpt-5.2",
+      "model_label": "GPT-5.2 thinking",
+      "simulation_id": "668da5f0-e691-4fd7-a954-ade87651682b"
+    },
+    {
+      "chunk_n": 1,
+      "expected_failed_sessions": 0,
+      "expected_sessions": 100,
+      "game": "Prisoner's Dilemma",
+      "mode": "Atomic",
+      "model_id": "deepseek/deepseek-v3.2",
+      "model_label": "DeepSeek V3 thinking",
+      "simulation_id": "3de77348-6b2f-4824-a34e-2776640ddf55"
+    },
+    {
+      "chunk_n": 10,
+      "expected_failed_sessions": 0,
+      "expected_sessions": 10,
+      "game": "Prisoner's Dilemma",
+      "mode": "ChunkN=10",
+      "model_id": "deepseek/deepseek-v3.2",
+      "model_label": "DeepSeek V3 thinking",
+      "simulation_id": "9926dd93-3db2-4f31-a479-ffb2a3427e69"
+    },
+    {
+      "chunk_n": 1,
+      "expected_failed_sessions": 0,
+      "expected_sessions": 100,
+      "game": "Prisoner's Dilemma",
+      "mode": "Atomic",
+      "model_id": "google/gemini-3.1-pro-preview",
+      "model_label": "Gemini 3.1 Pro thinking",
+      "simulation_id": "9e536bff-36d1-4318-95b0-793f175fa07c"
+    },
+    {
+      "chunk_n": 10,
+      "expected_failed_sessions": 0,
+      "expected_sessions": 10,
+      "game": "Prisoner's Dilemma",
+      "mode": "ChunkN=10",
+      "model_id": "google/gemini-3.1-pro-preview",
+      "model_label": "Gemini 3.1 Pro thinking",
+      "simulation_id": "24803e98-3de5-4c9e-8d96-34207d2fc641"
+    },
+    {
+      "chunk_n": 1,
+      "expected_failed_sessions": 0,
+      "expected_sessions": 100,
+      "game": "Prisoner's Dilemma",
+      "mode": "Atomic",
+      "model_id": "openai/gpt-5.2",
+      "model_label": "GPT-5.2 thinking",
+      "simulation_id": "7b4f1aaa-ed7c-478a-8054-772ca5f368a7"
+    },
+    {
+      "chunk_n": 10,
+      "expected_failed_sessions": 0,
+      "expected_sessions": 10,
+      "game": "Prisoner's Dilemma",
+      "mode": "ChunkN=10",
+      "model_id": "openai/gpt-5.2",
+      "model_label": "GPT-5.2 thinking",
+      "simulation_id": "95ba4114-2a08-4ba1-90a6-b437ebf2b784"
+    }
+  ],
+  "summary_config": {
+    "generation": {
+      "max_tokens": 300,
+      "temperature": 0
+    },
+    "model": "anthropic/claude-sonnet-5",
+    "prompt_version": "reasoning-cluster-summary-v3",
+    "provider": {
+      "allow_fallbacks": false,
+      "data_collection": "deny"
+    },
+    "reasoning": {
+      "effort": "high"
+    }
+  },
+  "tables": {
+    "cosine": [
+      {
+        "atomic_mean": 0.7715178907398419,
+        "atomic_sd": 0.07238677328097509,
+        "chunk_mean": 0.5902987448027669,
+        "chunk_sd": 0.10379766921596055,
+        "game": "Dictator",
+        "mean_difference": 0.181219145937075,
+        "model": "DeepSeek V3"
+      },
+      {
+        "atomic_mean": 0.8052165956975625,
+        "atomic_sd": 0.09876575390717032,
+        "chunk_mean": 0.6447872122391151,
+        "chunk_sd": 0.09519549987920325,
+        "game": "Dictator",
+        "mean_difference": 0.16042938345844748,
+        "model": "Gemini 3.1 Pro"
+      },
+      {
+        "atomic_mean": 0.8883402756833271,
+        "atomic_sd": 0.03931256760569951,
+        "chunk_mean": 0.7315506651264245,
+        "chunk_sd": 0.07377833570018044,
+        "game": "Dictator",
+        "mean_difference": 0.15678961055690255,
+        "model": "GPT-5.2"
+      },
+      {
+        "atomic_mean": 0.8387755570715786,
+        "atomic_sd": 0.04919084668230033,
+        "chunk_mean": 0.718194675994025,
+        "chunk_sd": 0.08421795237468996,
+        "game": "Prisoner's Dilemma",
+        "mean_difference": 0.1205808810775536,
+        "model": "DeepSeek V3"
+      },
+      {
+        "atomic_mean": 0.8895741226696882,
+        "atomic_sd": 0.03576075775206741,
+        "chunk_mean": 0.7292040783364107,
+        "chunk_sd": 0.08372329854481952,
+        "game": "Prisoner's Dilemma",
+        "mean_difference": 0.1603700443332775,
+        "model": "Gemini 3.1 Pro"
+      },
+      {
+        "atomic_mean": 0.8822504830570067,
+        "atomic_sd": 0.037412749117530196,
+        "chunk_mean": 0.7930741239841823,
+        "chunk_sd": 0.059187606362974446,
+        "game": "Prisoner's Dilemma",
+        "mean_difference": 0.0891763590728244,
+        "model": "GPT-5.2"
+      }
+    ],
+    "k2_composition": [
+      {
+        "cluster_0": 97,
+        "cluster_1": 3,
+        "game": "Dictator",
+        "mode": "Atomic",
+        "model": "DeepSeek V3",
+        "total": 100
+      },
+      {
+        "cluster_0": 85,
+        "cluster_1": 15,
+        "game": "Dictator",
+        "mode": "ChunkN=10",
+        "model": "DeepSeek V3",
+        "total": 100
+      },
+      {
+        "cluster_0": 32,
+        "cluster_1": 68,
+        "game": "Dictator",
+        "mode": "Atomic",
+        "model": "Gemini 3.1 Pro",
+        "total": 100
+      },
+      {
+        "cluster_0": 81,
+        "cluster_1": 19,
+        "game": "Dictator",
+        "mode": "ChunkN=10",
+        "model": "Gemini 3.1 Pro",
+        "total": 100
+      },
+      {
+        "cluster_0": 100,
+        "cluster_1": 0,
+        "game": "Dictator",
+        "mode": "Atomic",
+        "model": "GPT-5.2",
+        "total": 100
+      },
+      {
+        "cluster_0": 92,
+        "cluster_1": 8,
+        "game": "Dictator",
+        "mode": "ChunkN=10",
+        "model": "GPT-5.2",
+        "total": 100
+      },
+      {
+        "cluster_0": 33,
+        "cluster_1": 67,
+        "game": "Prisoner's Dilemma",
+        "mode": "Atomic",
+        "model": "DeepSeek V3",
+        "total": 100
+      },
+      {
+        "cluster_0": 50,
+        "cluster_1": 50,
+        "game": "Prisoner's Dilemma",
+        "mode": "ChunkN=10",
+        "model": "DeepSeek V3",
+        "total": 100
+      },
+      {
+        "cluster_0": 0,
+        "cluster_1": 100,
+        "game": "Prisoner's Dilemma",
+        "mode": "Atomic",
+        "model": "Gemini 3.1 Pro",
+        "total": 100
+      },
+      {
+        "cluster_0": 38,
+        "cluster_1": 62,
+        "game": "Prisoner's Dilemma",
+        "mode": "ChunkN=10",
+        "model": "Gemini 3.1 Pro",
+        "total": 100
+      },
+      {
+        "cluster_0": 0,
+        "cluster_1": 100,
+        "game": "Prisoner's Dilemma",
+        "mode": "Atomic",
+        "model": "GPT-5.2",
+        "total": 100
+      },
+      {
+        "cluster_0": 32,
+        "cluster_1": 68,
+        "game": "Prisoner's Dilemma",
+        "mode": "ChunkN=10",
+        "model": "GPT-5.2",
+        "total": 100
+      }
+    ],
+    "k2_summaries": [
+      {
+        "cluster": 0,
+        "game": "Dictator",
+        "observations": 487,
+        "summary": "Most responses balance self-interest against fairness norms, with a strong plurality choosing a 50/50 split to avoid guilt, signal equity, and minimize regret in an anonymous one-shot interaction. Others rationalize keeping majorities (60-90%) via token amounts ($5-40) to ease conscience while maximizing personal gain, reflecting varying altruism levels."
+      },
+      {
+        "cluster": 1,
+        "game": "Dictator",
+        "observations": 113,
+        "summary": "Most responses reason that since this is a one-shot, anonymous Dictator Game with no repercussions, retaliation, or future interactions, rational self-interest dictates keeping the entire $100 (allocating $0). A minority instead weigh fairness/social norms, offering token amounts ($10-$50) to balance self-interest against equity concerns."
+      },
+      {
+        "cluster": 0,
+        "game": "Prisoner's Dilemma",
+        "observations": 153,
+        "summary": "Most responses weigh mutual push’s $400 cooperative payoff against pull’s safer, self-protective guarantee ($300+ upside to $700). Many choose push optimistically, hoping for reciprocity and social efficiency, while others prioritize risk-avoidance and dominant-strategy logic, choosing pull to prevent exploitation given the one-shot, anonymous, no-communication setting."
+      },
+      {
+        "cluster": 1,
+        "game": "Prisoner's Dilemma",
+        "observations": 447,
+        "summary": "Nearly all responses identify pulling as the strictly dominant strategy, yielding higher payoffs than pushing regardless of the opponent's choice ($700 vs $400, $300 vs $0). Reasoning emphasizes risk-aversion, avoiding the worst-case $0 outcome, guaranteeing at least $300, and maximizing self-interest in a one-shot, non-cooperative, anonymous setting without trust or communication."
+      }
+    ],
+    "k_selection": [
+      {
+        "calinski_harabasz": 90.2002981625359,
+        "converged": true,
+        "davies_bouldin": 1.8242426338735622,
+        "game": "Dictator",
+        "inertia": 152.32539354424532,
+        "iterations": 8,
+        "k": 2,
+        "selected": true,
+        "silhouette": 0.1595629479240053,
+        "size_range": "113--487"
+      },
+      {
+        "calinski_harabasz": 89.37960617241745,
+        "converged": true,
+        "davies_bouldin": 2.2555945384630536,
+        "game": "Dictator",
+        "inertia": 134.90665395728522,
+        "iterations": 14,
+        "k": 3,
+        "selected": false,
+        "silhouette": 0.1581113923437962,
+        "size_range": "104--292"
+      },
+      {
+        "calinski_harabasz": 76.58129728558939,
+        "converged": true,
+        "davies_bouldin": 2.2696519478537724,
+        "game": "Dictator",
+        "inertia": 126.52806639374961,
+        "iterations": 7,
+        "k": 4,
+        "selected": false,
+        "silhouette": 0.12347747988670105,
+        "size_range": "101--207"
+      },
+      {
+        "calinski_harabasz": 67.23851969143716,
+        "converged": true,
+        "davies_bouldin": 2.4117845833885334,
+        "game": "Dictator",
+        "inertia": 120.7291902379836,
+        "iterations": 9,
+        "k": 5,
+        "selected": false,
+        "silhouette": 0.1248037211785551,
+        "size_range": "92--168"
+      },
+      {
+        "calinski_harabasz": 60.97059556199336,
+        "converged": true,
+        "davies_bouldin": 2.3659968322676854,
+        "game": "Dictator",
+        "inertia": 115.84672606303832,
+        "iterations": 10,
+        "k": 6,
+        "selected": false,
+        "silhouette": 0.12409577549444303,
+        "size_range": "70--147"
+      },
+      {
+        "calinski_harabasz": 56.523543169309995,
+        "converged": true,
+        "davies_bouldin": 2.3112684077083725,
+        "game": "Dictator",
+        "inertia": 111.52158757585293,
+        "iterations": 12,
+        "k": 7,
+        "selected": false,
+        "silhouette": 0.12275787111521831,
+        "size_range": "43--145"
+      },
+      {
+        "calinski_harabasz": 52.90353683752967,
+        "converged": true,
+        "davies_bouldin": 2.291854086485472,
+        "game": "Dictator",
+        "inertia": 107.84152705371257,
+        "iterations": 15,
+        "k": 8,
+        "selected": false,
+        "silhouette": 0.13038581586518633,
+        "size_range": "36--145"
+      },
+      {
+        "calinski_harabasz": 49.95403202227436,
+        "converged": true,
+        "davies_bouldin": 2.3006188111326797,
+        "game": "Dictator",
+        "inertia": 104.5829762987023,
+        "iterations": 11,
+        "k": 9,
+        "selected": false,
+        "silhouette": 0.12447392160181832,
+        "size_range": "34--123"
+      },
+      {
+        "calinski_harabasz": 47.52586618362906,
+        "converged": true,
+        "davies_bouldin": 2.224723320912127,
+        "game": "Dictator",
+        "inertia": 101.62585756253677,
+        "iterations": 16,
+        "k": 10,
+        "selected": false,
+        "silhouette": 0.12711404053941736,
+        "size_range": "28--113"
+      },
+      {
+        "calinski_harabasz": 95.1962901858437,
+        "converged": true,
+        "davies_bouldin": 2.1847906450899486,
+        "game": "Prisoner's Dilemma",
+        "inertia": 104.77978780263228,
+        "iterations": 10,
+        "k": 2,
+        "selected": true,
+        "silhouette": 0.1758502313036988,
+        "size_range": "153--447"
+      },
+      {
+        "calinski_harabasz": 78.3599513321934,
+        "converged": true,
+        "davies_bouldin": 2.596571727494561,
+        "game": "Prisoner's Dilemma",
+        "inertia": 96.20483701606764,
+        "iterations": 11,
+        "k": 3,
+        "selected": false,
+        "silhouette": 0.11389218426985896,
+        "size_range": "144--239"
+      },
+      {
+        "calinski_harabasz": 67.70887250724674,
+        "converged": true,
+        "davies_bouldin": 2.3754651765068053,
+        "game": "Prisoner's Dilemma",
+        "inertia": 90.58644650886433,
+        "iterations": 26,
+        "k": 4,
+        "selected": false,
+        "silhouette": 0.09563810355936561,
+        "size_range": "115--201"
+      },
+      {
+        "calinski_harabasz": 58.04378400798848,
+        "converged": true,
+        "davies_bouldin": 2.664044973859312,
+        "game": "Prisoner's Dilemma",
+        "inertia": 87.3679317042481,
+        "iterations": 14,
+        "k": 5,
+        "selected": false,
+        "silhouette": 0.10062279704608236,
+        "size_range": "87--138"
+      },
+      {
+        "calinski_harabasz": 51.24324356502078,
+        "converged": true,
+        "davies_bouldin": 2.7664553751748584,
+        "game": "Prisoner's Dilemma",
+        "inertia": 84.8573803698981,
+        "iterations": 9,
+        "k": 6,
+        "selected": false,
+        "silhouette": 0.0922066640938769,
+        "size_range": "54--132"
+      },
+      {
+        "calinski_harabasz": 46.57435530681061,
+        "converged": true,
+        "davies_bouldin": 2.636537662516054,
+        "game": "Prisoner's Dilemma",
+        "inertia": 82.55599808897739,
+        "iterations": 18,
+        "k": 7,
+        "selected": false,
+        "silhouette": 0.079665644655977,
+        "size_range": "45--128"
+      },
+      {
+        "calinski_harabasz": 43.35712571859422,
+        "converged": true,
+        "davies_bouldin": 2.5839820727131686,
+        "game": "Prisoner's Dilemma",
+        "inertia": 80.29504302213584,
+        "iterations": 16,
+        "k": 8,
+        "selected": false,
+        "silhouette": 0.08337720393146611,
+        "size_range": "43--99"
+      },
+      {
+        "calinski_harabasz": 40.26025938447798,
+        "converged": true,
+        "davies_bouldin": 2.590584886737263,
+        "game": "Prisoner's Dilemma",
+        "inertia": 78.61586986879277,
+        "iterations": 12,
+        "k": 9,
+        "selected": false,
+        "silhouette": 0.08170458576921003,
+        "size_range": "30--97"
+      },
+      {
+        "calinski_harabasz": 37.313174976602596,
+        "converged": true,
+        "davies_bouldin": 2.6192597867364027,
+        "game": "Prisoner's Dilemma",
+        "inertia": 77.40315839994528,
+        "iterations": 10,
+        "k": 10,
+        "selected": false,
+        "silhouette": 0.07834021261261324,
+        "size_range": "34--99"
+      }
+    ]
+  },
+  "ticket": "EEA-0011-02"
+}

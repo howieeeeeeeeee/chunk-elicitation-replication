@@ -1,7 +1,7 @@
 {
   "benchmark_count": 18,
   "derived": {
-    "generated_at": "2026-08-14T19:05:26.371665Z",
+    "generated_at": "2026-08-14T20:40:14.520900Z",
     "kmeans_analyses": {
       "clustering_status_counts": {
         "complete": 8,
@@ -60,7 +60,7 @@
       "embedding_failure_count": 0,
       "embedding_success_count": 0,
       "game_count": 8,
-      "generated_at": "2026-08-14T19:05:26.371665Z",
+      "generated_at": "2026-08-14T20:40:14.520900Z",
       "phase_names": [
         "phase_2_context"
       ],
@@ -76,7 +76,7 @@
       "embedding_failure_count": 0,
       "embedding_success_count": 1200,
       "game_count": 10,
-      "generated_at": "2026-08-14T19:05:26.371665Z",
+      "generated_at": "2026-08-14T20:40:14.520900Z",
       "phase_names": [
         "phase_2"
       ],
@@ -90,7 +90,7 @@
       "embedding_failure_count": 0,
       "embedding_success_count": 0,
       "game_count": 5,
-      "generated_at": "2026-08-14T19:05:26.371665Z",
+      "generated_at": "2026-08-14T20:40:14.520900Z",
       "phase_names": [
         "phase_2"
       ],
@@ -99,7 +99,7 @@
       "simulation_count": 161
     }
   },
-  "generated_at": "2026-08-14T19:05:26.371665Z",
+  "generated_at": "2026-08-14T20:40:14.520900Z",
   "schema_version": 5,
   "selection": {
     "completed_source_count": 3755,

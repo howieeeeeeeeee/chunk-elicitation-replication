@@ -13,6 +13,7 @@ TEX_DIR = REPO_ROOT / "tex"
 TABLES_DIR = TEX_DIR / "tables"
 FIGS_DIR = TEX_DIR / "figs"
 SRC_FIGS_DIR = REPO_ROOT / "output" / "figures"
+MAIN_ANALYSIS_OUTPUT_DIR = REPO_ROOT / "output" / "main_analysis"
 
 
 def get_analysis_database():
