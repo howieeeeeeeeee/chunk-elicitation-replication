@@ -10,6 +10,7 @@ from data_summarizer import (
 from .config import DEFAULT_REGRESSORS
 from .environment import FIGS_DIR, TABLES_DIR, TEX_DIR, get_analysis_database
 from .figures import generate_figures
+from .mechanism import generate_mechanism_outputs
 from .regression_tables import write_regression_table
 from .summary_tables import (
     filter_behavior,
@@ -28,7 +29,7 @@ def run_pipeline() -> None:
 
     db = get_analysis_database()
 
-    print("[1/7] Loading phase_2_context simulations...")
+    print("[1/8] Loading phase_2_context simulations...")
     sims_p2c = show_all_simulations_df(
         _db=db,
         filter_incomplete=True,
@@ -41,7 +42,7 @@ def run_pipeline() -> None:
     sims_p2c = sims_p2c[sims_p2c["Extra Flag"].astype(str) == "[]"]
     print(f"      phase_2_context sims (Extra Flag = []): {len(sims_p2c)}")
 
-    print("[2/7] Writing regression table...")
+    print("[2/8] Writing regression table...")
     write_regression_table(
         sims_p2c,
         TABLES_DIR / "regression_w1_phase2_context.tex",
@@ -49,7 +50,7 @@ def run_pipeline() -> None:
         regressors=DEFAULT_REGRESSORS,
     )
 
-    print("[3/7] Loading phase_2 simulations...")
+    print("[3/8] Loading phase_2 simulations...")
     sims_p2 = show_all_simulations_df(
         _db=db,
         filter_incomplete=True,
@@ -60,20 +61,20 @@ def run_pipeline() -> None:
         _db=db, simulations_df=sims_p2, decision_index=0, alpha=0.05
     ).sort_index()
 
-    print("[4/7] Writing overall W1 summary (phase_2 behavior)...")
+    print("[4/8] Writing overall W1 summary (phase_2 behavior)...")
     df_behavior = filter_behavior(sims_p2)
     print(f"      behavior sims: {len(df_behavior)}")
     write_overall_w1_summary(
         df_behavior, TABLES_DIR / "w1_overall_summary_phase2.tex"
     )
 
-    print("[5/7] Writing Explain Reasoning on/off tables...")
+    print("[5/8] Writing Explain Reasoning on/off tables...")
     write_reasoning_on_off(sims_p2, TABLES_DIR / "w1_reasoning_on_off_phase2.tex")
     write_reasoning_large_chunks(
         sims_p2, TABLES_DIR / "w1_reasoning_on_off_large_chunks_phase2.tex"
     )
 
-    print("[6/7] Writing ground-truth and random-number tables...")
+    print("[6/8] Writing ground-truth and random-number tables...")
     write_ground_truth_summary_by_mode(
         sims_p2, TABLES_DIR / "w1_summary_ground_truth_by_mode.tex"
     )
@@ -87,10 +88,14 @@ def run_pipeline() -> None:
     if old_nonzero.exists():
         old_nonzero.unlink()
 
-    print("[7/7] Generating figures...")
+    print("[7/8] Generating figures...")
     copied = generate_figures(db, sims_p2)
     print(f"      figures ready: {copied}")
     print(f"      static result.tex retained: {TEX_DIR / 'result.tex'}")
+
+    print("[8/8] Generating selected within-response mechanism outputs...")
+    mechanism_outputs = generate_mechanism_outputs(db)
+    print(f"      mechanism outputs ready: {mechanism_outputs}")
 
     print("Done. Artifacts under:", TEX_DIR)
 

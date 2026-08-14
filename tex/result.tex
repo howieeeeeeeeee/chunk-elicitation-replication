@@ -109,4 +109,41 @@
 \label{fig:dist-groundtruth}
 \end{figure}
 
+\section{Within-response Mechanism}
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.95\textwidth]{mechanism_first_answer.png}
+\caption{Distance to the human benchmark and modal-mass share for atomic elicitation, the first answer from each chunk call, and the full chunk distribution.}
+\label{fig:mech-first-answer}
+\end{figure}
+
+\begin{table}[H]
+\centering
+\caption{Position-wise mechanism results for Answers 1--10.}
+\label{tab:mech-position-answer}
+\resizebox{\textwidth}{!}{\input{tables/mechanism_position_answer_w1}}
+\end{table}
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=\textwidth]{mechanism_position_answer_w1.png}
+\caption{Distance and concentration by answer position within chunked responses.}
+\label{fig:mech-position-answer}
+\end{figure}
+
+\begin{table}[H]
+\centering
+\caption{Cumulative mechanism results after pooling the first $k$ answer positions.}
+\label{tab:mech-cumulative-answer}
+\resizebox{\textwidth}{!}{\input{tables/mechanism_cumulative_answer_w1}}
+\end{table}
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=\textwidth]{mechanism_cumulative_answer_w1.png}
+\caption{Distance and concentration as answer positions are pooled cumulatively.}
+\label{fig:mech-cumulative-answer}
+\end{figure}
+
 \end{document}
