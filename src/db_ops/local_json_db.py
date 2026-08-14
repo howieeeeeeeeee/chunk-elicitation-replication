@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import copy
+from dataclasses import dataclass
 import json
 import os
 import threading
@@ -22,8 +23,18 @@ DERIVED_COLLECTIONS = (
     "kmeans_analyses",
 )
 COLLECTIONS = EXPERIMENT_COLLECTIONS + DERIVED_COLLECTIONS
+
+
+@dataclass(frozen=True)
+class _ParsedRecordCache:
+    signature: tuple[int, int, int] | None
+    records: list[dict]
+    id_index: dict[Any, dict]
+
+
 _LOCKS_GUARD = threading.RLock()
 _LOCKS: dict[Path, threading.RLock] = {}
+_RECORD_CACHES: dict[Path, _ParsedRecordCache] = {}
 
 
 def to_jsonable(value: Any) -> Any:
@@ -92,34 +103,68 @@ class LocalJsonCollection:
     def __init__(self, path: Path):
         self.path = path
         resolved = self.path.resolve()
+        self._resolved_path = resolved
         with _LOCKS_GUARD:
             if resolved not in _LOCKS:
                 _LOCKS[resolved] = threading.RLock()
             self._lock = _LOCKS[resolved]
 
-    def _load(self) -> list[dict]:
-        if not self.path.exists():
-            return []
+    def _file_signature(self) -> tuple[int, int, int] | None:
+        try:
+            stat = self.path.stat()
+        except FileNotFoundError:
+            return None
+        return stat.st_mtime_ns, stat.st_size, stat.st_ino
+
+    def _cache_records(
+        self,
+        records: list[dict],
+        signature: tuple[int, int, int] | None,
+    ) -> _ParsedRecordCache:
+        id_index: dict[Any, dict] = {}
+        for record in records:
+            if "_id" not in record:
+                continue
+            try:
+                id_index.setdefault(record["_id"], record)
+            except TypeError:
+                continue
+        cache = _ParsedRecordCache(signature, records, id_index)
+        _RECORD_CACHES[self._resolved_path] = cache
+        return cache
+
+    def _load_cache(self) -> _ParsedRecordCache:
+        signature = self._file_signature()
+        cached = _RECORD_CACHES.get(self._resolved_path)
+        if cached is not None and cached.signature == signature:
+            return cached
+        if signature is None:
+            return self._cache_records([], signature)
         with self.path.open("r", encoding="utf-8") as fh:
             data = json.load(fh)
         if isinstance(data, dict) and "records" in data:
             data = data["records"]
         if not isinstance(data, list):
             raise ValueError(f"{self.path} must contain a JSON array.")
-        return data
+        return self._cache_records(data, signature)
+
+    def _load(self) -> list[dict]:
+        return self._load_cache().records
 
     def _write(self, records: list[dict]) -> None:
+        jsonable_records = to_jsonable(records)
         self.path.parent.mkdir(parents=True, exist_ok=True)
         temporary_path = self.path.with_name(
             f".{self.path.name}.{uuid.uuid4().hex}.tmp"
         )
         try:
             with temporary_path.open("w", encoding="utf-8") as fh:
-                json.dump(to_jsonable(records), fh, indent=2, sort_keys=True)
+                json.dump(jsonable_records, fh, indent=2, sort_keys=True)
                 fh.write("\n")
                 fh.flush()
                 os.fsync(fh.fileno())
             temporary_path.replace(self.path)
+            self._cache_records(jsonable_records, self._file_signature())
         finally:
             if temporary_path.exists():
                 temporary_path.unlink()
@@ -134,13 +179,32 @@ class LocalJsonCollection:
         return rows
 
     def find_one(self, query: dict | None = None, projection: dict | None = None):
-        rows = self.find(query=query, projection=projection)
-        return rows[0] if rows else None
+        with self._lock:
+            cache = self._load_cache()
+            if isinstance(query, dict) and set(query) == {"_id"}:
+                record_id = query["_id"]
+                if not isinstance(record_id, dict):
+                    try:
+                        row = cache.id_index.get(record_id)
+                    except TypeError:
+                        row = None
+                    if row is not None:
+                        return _apply_projection(row, projection)
+                    try:
+                        hash(record_id)
+                    except TypeError:
+                        pass
+                    else:
+                        return None
+            for row in cache.records:
+                if matches_filter(row, query):
+                    return _apply_projection(row, projection)
+        return None
 
     def bulk_upsert(self, records: Iterable[dict]) -> dict:
         records = [to_jsonable(record) for record in records]
         with self._lock:
-            existing = self._load()
+            existing = copy.deepcopy(self._load())
             positions = {row.get("_id"): i for i, row in enumerate(existing)}
             matched = 0
             upserted = 0
