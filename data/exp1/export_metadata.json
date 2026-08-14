@@ -4,11 +4,11 @@
   "embedding_failure_count": 0,
   "embedding_success_count": 0,
   "game_count": 8,
-  "generated_at": "2026-07-24T10:07:33.207768Z",
+  "generated_at": "2026-08-14T19:05:26.371665Z",
   "phase_names": [
     "phase_2_context"
   ],
-  "schema_version": 4,
+  "schema_version": 5,
   "session_count": 37012,
   "simulation_count": 672
 }

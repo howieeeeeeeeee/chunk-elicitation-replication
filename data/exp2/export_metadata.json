@@ -1,14 +1,16 @@
 {
-  "embedding_config_hashes": [],
-  "embedding_count": 0,
+  "embedding_config_hashes": [
+    "d19b68e02a96df7587204500a6ed50b5e423481d937041282945e732f3e52e1a"
+  ],
+  "embedding_count": 1200,
   "embedding_failure_count": 0,
-  "embedding_success_count": 0,
+  "embedding_success_count": 1200,
   "game_count": 10,
-  "generated_at": "2026-07-24T10:07:33.207768Z",
+  "generated_at": "2026-08-14T19:05:26.371665Z",
   "phase_names": [
     "phase_2"
   ],
-  "schema_version": 4,
+  "schema_version": 5,
   "session_count": 24961,
   "simulation_count": 1319
 }
