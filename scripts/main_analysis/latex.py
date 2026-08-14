@@ -66,11 +66,16 @@ def _write_tabular(
     pre_header: str | None = None,
     midrule_after_header: bool = True,
 ) -> None:
-    """Write a bare tabular environment to ``path``.
+    """Write a normal-sized tabular environment to ``path``.
 
     ``header`` and each row in ``rows`` must already be LaTeX-safe strings.
     """
-    lines = [f"\\begin{{tabular}}{{{col_spec}}}", "\\toprule"]
+    lines = [
+        "\\normalsize",
+        "\\setlength{\\tabcolsep}{3pt}",
+        f"\\begin{{tabular}}{{{col_spec}}}",
+        "\\toprule",
+    ]
     if pre_header:
         lines.append(pre_header)
     lines.append(" & ".join(header) + r" \\")
@@ -82,4 +87,3 @@ def _write_tabular(
     lines.append("\\end{tabular}")
     path.parent.mkdir(parents=True, exist_ok=True)
     path.write_text("\n".join(lines) + "\n", encoding="utf-8")
-
