@@ -1,8 +1,8 @@
-# Chunk Elicitation Replication
+# From Individuals to Populations: Eliciting Human Behaviour from Large Language Models
 
-This is the official replication package for Jian and Chen (2026), *The
-sampling unit shapes behavioural similarity in large language model
-simulations*. Simulation outputs are included as local JSON files, so readers
+This is the official replication package for Jian and Chen (2026), *From
+Individuals to Populations: Eliciting Human Behaviour from Large Language
+Models*. Simulation outputs are included as local JSON files, so readers
 can inspect the existing data and run the analysis without rerunning the
 simulations. This repository does not connect to MongoDB.
 
